@@ -9,6 +9,10 @@ public class SignUpRequest {
     private String dateOfBirth;
     private String password;
 
+    // Default constructor required for JSON deserialization
+    public SignUpRequest() {
+    }
+
     public SignUpRequest(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth, String password) {
         this.identityNumber = identityNumber;
         this.fullName = fullName;
