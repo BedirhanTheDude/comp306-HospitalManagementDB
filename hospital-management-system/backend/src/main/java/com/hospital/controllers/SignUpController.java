@@ -1,25 +1,50 @@
 package com.hospital.controllers;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.hospital.dto.SignUpRequest;
 import com.hospital.repositories.PatientRepository;
 import com.hospital.repositories.UserRepository;
 
+@RestController
+@RequestMapping("/api")
 public class SignUpController {
 
-    public boolean signUp(SignUpRequest signUpRequest) {
-        if (validateNewPatient(signUpRequest)) {
-            String ssn = signUpRequest.getIdentityNumber();
-            String fullName = signUpRequest.getFullName();
-            String gender = signUpRequest.getGender();
-            String phone = signUpRequest.getPhoneNumber();
-            String dob = signUpRequest.getDateOfBirth();
-            String password = signUpRequest.getPassword();
+    @PostMapping("/signup")
+    public ResponseEntity<Map<String, Object>> signUp(@RequestBody SignUpRequest signUpRequest) {
+        Map<String, Object> response = new HashMap<>();
 
-            savePatientData(ssn, fullName, gender, phone, dob, password);
-            return true;
+        try {
+            if (validateNewPatient(signUpRequest)) {
+                String ssn = signUpRequest.getIdentityNumber();
+                String fullName = signUpRequest.getFullName();
+                String gender = signUpRequest.getGender();
+                String phone = signUpRequest.getPhoneNumber();
+                String dob = signUpRequest.getDateOfBirth();
+                String password = signUpRequest.getPassword();
+
+                savePatientData(ssn, fullName, gender, phone, dob, password);
+
+                response.put("success", true);
+                response.put("message", "Patient registered successfully");
+                return ResponseEntity.ok(response);
+            }
+
+            response.put("success", false);
+            response.put("error", "Invalid patient data");
+            return ResponseEntity.badRequest().body(response);
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
         }
-        // Sign up logic
-        return false;
     }
 
     private boolean validateNewPatient(SignUpRequest signUpRequest) {

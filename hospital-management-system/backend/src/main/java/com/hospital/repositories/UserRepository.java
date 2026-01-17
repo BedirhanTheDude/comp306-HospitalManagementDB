@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface UserRepository {
      public static void insertUser(String fullName, String password, String userType) {
-        String sql = "INSERT INTO USER(user_name, password_hash, user_type) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO USER(username, password_hash, user_type) VALUES (?, ?, ?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

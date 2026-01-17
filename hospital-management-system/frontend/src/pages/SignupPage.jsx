@@ -8,7 +8,6 @@ import {
   MenuItem,
 } from '@mui/material';
 import { signupPatient } from '../services/signupService';
-import {signupResponse, signupRequest} from "../types/signupTypes";
 
 const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
   const [fullName, setFullName] = useState('');
@@ -79,11 +78,11 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
     return true;
   };
 
-  // ------------ INSERT BACKEND CALL HERE ---------------
+  // ------------ BACKEND CALL ---------------
   const handleSignup = async () => {
     if (!validInputs()) return;
 
-    signupRequest = {
+    const request = {
       identityNumber,
       fullName,
       gender,
@@ -92,15 +91,12 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
       password,
     };
 
-    const signupResponse = await signupPatient(signupRequest);
+    const response = await signupPatient(request);
 
-    // Hardcoded success for now
-    const success = signupResponse;
-
-    if (success) {
+    if (response && response.success) {
       goToHome();
     } else {
-      setError('Signup failed. Please try again.');
+      setError(response?.error || 'Signup failed. Please try again.');
     }
   };
 
