@@ -1,39 +1,67 @@
 import React from 'react';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+} from '@mui/material';
 
 const LoginPage = ({ goToSignup }) => {
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#f4f6f8',
-    }}>
-      <form style={{
-        background: '#fff',
-        padding: '32px',
-        borderRadius: '8px',
-        width: '360px',
+    <Box
+      sx={{
+        minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Login</h1>
-
-        <label>TR Identity Number</label>
-        <input type="text" required style={{ marginBottom: '16px', padding: '8px' }} />
-
-        <label>Password</label>
-        <input type="password" required style={{ marginBottom: '20px', padding: '8px' }} />
-
-        <button type="submit" style={{ padding: '10px', marginBottom: '10px' }}>
+        justifyContent: 'center',
+        alignItems: 'center',
+        bgcolor: '#f4f6f8',
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          p: 4,
+          width: 360,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Typography variant="h5" align="center" gutterBottom>
           Login
-        </button>
+        </Typography>
 
-        <button type="button" onClick={goToSignup}>
+        <TextField
+          label="Identity Number"
+          margin="normal"
+          fullWidth
+        />
+
+        <TextField
+          label="Password"
+          type="password"
+          margin="normal"
+          fullWidth
+        />
+
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{ mt: 2 }}
+        >
+          Login
+        </Button>
+
+        <Button
+          variant="text"
+          fullWidth
+          sx={{ mt: 1 }}
+          onClick={goToSignup}
+        >
           Don’t have an account? Sign Up
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Paper>
+    </Box>
   );
 };
 

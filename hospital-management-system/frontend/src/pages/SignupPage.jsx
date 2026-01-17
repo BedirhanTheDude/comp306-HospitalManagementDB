@@ -1,48 +1,60 @@
 import React from 'react';
+import {
+  Box,
+  Button,
+  TextField,
+  Typography,
+  Paper,
+} from '@mui/material';
 
 const SignupPage = ({ goToLogin }) => {
   return (
-    <div style={{
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: '#f4f6f8',
-    }}>
-      <form style={{
-        background: '#fff',
-        padding: '32px',
-        borderRadius: '8px',
-        width: '380px',
+    <Box
+      sx={{
+        minHeight: '100vh',
         display: 'flex',
-        flexDirection: 'column',
-      }}>
-        <h1 style={{ textAlign: 'center', marginBottom: '24px' }}>Sign Up</h1>
+        justifyContent: 'center',
+        alignItems: 'center',
+        bgcolor: '#f4f6f8',
+      }}
+    >
+      <Paper
+        elevation={4}
+        sx={{
+          p: 4,
+          width: 400,
+          display: 'flex',
+          flexDirection: 'column',
+        }}
+      >
+        <Typography variant="h5" align="center" gutterBottom>
+          Sign Up
+        </Typography>
 
-        <label>Full Name</label>
-        <input type="text" required style={{ marginBottom: '12px', padding: '8px' }} />
+        <TextField label="Full Name" margin="normal" fullWidth />
+        <TextField label="Identity Number" margin="normal" fullWidth />
+        <TextField label="Email" margin="normal" fullWidth />
+        <TextField label="Password" type="password" margin="normal" fullWidth />
+        <TextField label="Confirm Password" type="password" margin="normal" fullWidth />
 
-        <label>Username</label>
-        <input type="text" required style={{ marginBottom: '12px', padding: '8px' }} />
-
-        <label>Email</label>
-        <input type="email" required style={{ marginBottom: '12px', padding: '8px' }} />
-
-        <label>Password</label>
-        <input type="password" required style={{ marginBottom: '12px', padding: '8px' }} />
-
-        <label>Confirm Password</label>
-        <input type="password" required style={{ marginBottom: '20px', padding: '8px' }} />
-
-        <button type="submit" style={{ padding: '10px', marginBottom: '10px' }}>
+        <Button
+          variant="contained"
+          fullWidth
+          sx={{ mt: 2 }}
+        >
           Create Account
-        </button>
+        </Button>
 
-        <button type="button" onClick={goToLogin}>
+        <Button
+          variant="text"
+          fullWidth
+          sx={{ mt: 1 }}
+          onClick={goToLogin}
+        >
           Back to Login
-        </button>
-      </form>
-    </div>
+        </Button>
+      </Paper>
+    </Box>
   );
 };
 
