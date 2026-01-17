@@ -7,6 +7,8 @@ import {
   Paper,
   MenuItem,
 } from '@mui/material';
+import { signupPatient } from '../services/signupService';
+import {signupResponse, signupRequest} from "../types/signupTypes";
 
 const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
   const [fullName, setFullName] = useState('');
@@ -81,8 +83,19 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
   const handleSignup = async () => {
     if (!validInputs()) return;
 
+    signupRequest = {
+      identityNumber,
+      fullName,
+      gender,
+      phoneNumber,
+      dateOfBirth: birthDate,
+      password,
+    };
+
+    const signupResponse = await signupPatient(signupRequest);
+
     // Hardcoded success for now
-    const success = true;
+    const success = signupResponse;
 
     if (success) {
       goToHome();
