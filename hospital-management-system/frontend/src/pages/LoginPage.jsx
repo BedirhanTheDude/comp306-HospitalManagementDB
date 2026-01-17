@@ -1,67 +1,100 @@
 import React from 'react';
 import {
+  Container,
   Box,
-  Button,
   TextField,
+  Button,
   Typography,
-  Paper,
+  Stack
 } from '@mui/material';
 
-const LoginPage = ({ goToSignup }) => {
+const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
+
+    //------------INSERT BACKEND CALL HERE ---------------
+      const handleLogin = async () => {
+        //hardcoded true for now, else call verifyLogin
+        const success = true;
+
+        if (success) {
+          goToHome();
+        } else {
+          setError('Invalid username or password');
+        }
+      };
+
   return (
-    <Box
-      sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        bgcolor: '#f4f6f8',
-      }}
-    >
-      <Paper
-        elevation={4}
+    <Container maxWidth="sm">
+      <Box
         sx={{
-          p: 4,
-          width: 360,
+          minHeight: '100vh',
           display: 'flex',
-          flexDirection: 'column',
+          alignItems: 'center',
         }}
       >
-        <Typography variant="h5" align="center" gutterBottom>
-          Login
-        </Typography>
-
-        <TextField
-          label="Identity Number"
-          margin="normal"
-          fullWidth
-        />
-
-        <TextField
-          label="Password"
-          type="password"
-          margin="normal"
-          fullWidth
-        />
-
-        <Button
-          variant="contained"
-          fullWidth
-          sx={{ mt: 2 }}
+        <Box
+          sx={{
+            width: '100%',
+            p: 4,
+            boxShadow: 3,
+            borderRadius: 2,
+          }}
         >
-          Login
-        </Button>
+          <Typography variant="h4" align="center" gutterBottom>
+            Login
+          </Typography>
 
-        <Button
-          variant="text"
-          fullWidth
-          sx={{ mt: 1 }}
-          onClick={goToSignup}
-        >
-          Don’t have an account? Sign Up
-        </Button>
-      </Paper>
-    </Box>
+          <Typography
+            variant="subtitle1"
+            align="center"
+            color="text.secondary"
+            gutterBottom
+          >
+            Logging in as <strong>{role}</strong>
+          </Typography>
+
+          <Stack spacing={2} mt={3}>
+            <TextField
+              label="Username"
+              fullWidth
+            />
+
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+            />
+
+            <Button
+              variant="contained"
+              size="large"
+              fullWidth
+              onClick={handleLogin}
+            >
+              Login
+            </Button>
+
+            {/* Patient-only signup */}
+            {role === 'PATIENT' && (
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={goToSignup}
+              >
+                Sign Up
+              </Button>
+            )}
+
+            <Button
+              variant="text"
+              fullWidth
+              onClick={goToWelcome}
+            >
+              Back to Welcome
+            </Button>
+          </Stack>
+        </Box>
+      </Box>
+    </Container>
   );
 };
 
