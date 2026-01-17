@@ -1,0 +1,2 @@
+-- V2: Add Indexes Migration
+-- Performance optimization indexes

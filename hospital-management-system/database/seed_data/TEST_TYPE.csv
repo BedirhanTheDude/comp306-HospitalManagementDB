@@ -1,0 +1,18 @@
+type_id,name,unit,min_ref,max_ref
+1,Complete Blood Count (CBC),cells/mcL,4000.0,11000.0
+2,Hemoglobin,g/dL,12.0,17.0
+3,Platelet Count,cells/mcL,150000.0,400000.0
+4,Glucose (Fasting),mg/dL,70.0,100.0
+5,Cholesterol (Total),mg/dL,125.0,200.0
+6,HDL Cholesterol,mg/dL,40.0,60.0
+7,LDL Cholesterol,mg/dL,0.0,100.0
+8,Triglycerides,mg/dL,0.0,150.0
+9,Creatinine,mg/dL,0.6,1.2
+10,Blood Urea Nitrogen (BUN),mg/dL,7.0,20.0
+11,ALT (Liver Enzyme),U/L,7.0,56.0
+12,AST (Liver Enzyme),U/L,10.0,40.0
+13,Thyroid Stimulating Hormone (TSH),mIU/L,0.4,4.0
+14,Hemoglobin A1C,%,4.0,5.6
+15,Vitamin D,ng/mL,30.0,100.0
+16,Blood Pressure (Systolic),mmHg,90.0,120.0
+17,Blood Pressure (Diastolic),mmHg,60.0,80.0

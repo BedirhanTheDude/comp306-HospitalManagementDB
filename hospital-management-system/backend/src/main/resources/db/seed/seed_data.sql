@@ -1,0 +1,2 @@
+-- Seed Data for Hospital Management System
+-- Initial data population

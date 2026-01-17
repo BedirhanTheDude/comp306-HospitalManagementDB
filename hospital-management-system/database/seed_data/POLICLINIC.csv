@@ -1,0 +1,192 @@
+poid,name,bid
+1,Psychiatry,1
+2,Pediatrics,1
+3,Obstetrics and Gynecology,1
+4,Orthopedics,1
+5,Ophthalmology,1
+6,Endocrinology,1
+7,Dermatology,1
+8,Gastroenterology,1
+9,Oncology,2
+10,Dermatology,2
+11,Cardiology,2
+12,Urology,2
+13,Rheumatology,2
+14,Neurology,2
+15,Pulmonology,2
+16,Orthopedics,2
+17,General Medicine,2
+18,Endocrinology,2
+19,Nephrology,2
+20,Cardiology,3
+21,Radiology,3
+22,Obstetrics and Gynecology,3
+23,Dermatology,3
+24,Emergency Medicine,3
+25,Pulmonology,3
+26,Ophthalmology,3
+27,General Medicine,3
+28,Neurology,3
+29,Oncology,3
+30,General Medicine,4
+31,Pediatrics,4
+32,Dermatology,4
+33,Pulmonology,4
+34,Radiology,4
+35,Oncology,4
+36,Cardiology,4
+37,Emergency Medicine,4
+38,Neurology,4
+39,Rheumatology,4
+40,Psychiatry,4
+41,Gastroenterology,4
+42,Obstetrics and Gynecology,5
+43,Pediatrics,5
+44,Rheumatology,5
+45,Emergency Medicine,5
+46,General Medicine,5
+47,Neurology,5
+48,Gastroenterology,5
+49,Ophthalmology,5
+50,Pulmonology,5
+51,Urology,6
+52,Obstetrics and Gynecology,6
+53,Emergency Medicine,6
+54,Cardiology,6
+55,Orthopedics,6
+56,Endocrinology,6
+57,Neurology,6
+58,Oncology,6
+59,Nephrology,6
+60,General Medicine,6
+61,Cardiology,7
+62,Neurology,7
+63,Emergency Medicine,7
+64,Nephrology,7
+65,Orthopedics,7
+66,Oncology,7
+67,Ophthalmology,7
+68,Gastroenterology,7
+69,Pediatrics,7
+70,Urology,7
+71,Rheumatology,7
+72,Pediatrics,8
+73,Nephrology,8
+74,Rheumatology,8
+75,Dermatology,8
+76,Cardiology,8
+77,General Medicine,8
+78,Obstetrics and Gynecology,8
+79,Endocrinology,8
+80,Orthopedics,9
+81,General Medicine,9
+82,Radiology,9
+83,Rheumatology,9
+84,Pulmonology,9
+85,Neurology,9
+86,Urology,9
+87,Oncology,9
+88,Obstetrics and Gynecology,9
+89,Emergency Medicine,9
+90,Gastroenterology,9
+91,Psychiatry,9
+92,Oncology,10
+93,Rheumatology,10
+94,Pediatrics,10
+95,Urology,10
+96,Orthopedics,10
+97,Nephrology,10
+98,Ophthalmology,10
+99,Radiology,10
+100,Obstetrics and Gynecology,10
+101,Endocrinology,11
+102,Obstetrics and Gynecology,11
+103,Dermatology,11
+104,Psychiatry,11
+105,Neurology,11
+106,Gastroenterology,11
+107,Urology,11
+108,Nephrology,11
+109,Oncology,11
+110,Urology,12
+111,Endocrinology,12
+112,Rheumatology,12
+113,Emergency Medicine,12
+114,Radiology,12
+115,Psychiatry,12
+116,Pulmonology,12
+117,Neurology,12
+118,Orthopedics,13
+119,Nephrology,13
+120,Radiology,13
+121,Pulmonology,13
+122,Endocrinology,13
+123,Dermatology,13
+124,Ophthalmology,13
+125,Oncology,13
+126,Urology,13
+127,Gastroenterology,13
+128,Obstetrics and Gynecology,14
+129,Nephrology,14
+130,Emergency Medicine,14
+131,Pulmonology,14
+132,General Medicine,14
+133,Oncology,14
+134,Psychiatry,14
+135,Urology,14
+136,Neurology,15
+137,Pulmonology,15
+138,Endocrinology,15
+139,Ophthalmology,15
+140,Urology,15
+141,Radiology,15
+142,Dermatology,15
+143,Rheumatology,15
+144,Gastroenterology,15
+145,Orthopedics,15
+146,Pulmonology,16
+147,Rheumatology,16
+148,General Medicine,16
+149,Pediatrics,16
+150,Neurology,16
+151,Endocrinology,16
+152,Ophthalmology,16
+153,Orthopedics,16
+154,Gastroenterology,16
+155,Dermatology,16
+156,Obstetrics and Gynecology,17
+157,Dermatology,17
+158,Nephrology,17
+159,Rheumatology,17
+160,Neurology,17
+161,Psychiatry,17
+162,Gastroenterology,17
+163,Cardiology,17
+164,Endocrinology,18
+165,Pulmonology,18
+166,Pediatrics,18
+167,Nephrology,18
+168,Radiology,18
+169,Urology,18
+170,Orthopedics,18
+171,Rheumatology,18
+172,Ophthalmology,18
+173,Neurology,18
+174,Gastroenterology,18
+175,Oncology,19
+176,General Medicine,19
+177,Nephrology,19
+178,Psychiatry,19
+179,Radiology,19
+180,Emergency Medicine,19
+181,Pediatrics,19
+182,Cardiology,19
+183,Pulmonology,19
+184,Gastroenterology,20
+185,Oncology,20
+186,Emergency Medicine,20
+187,Rheumatology,20
+188,Obstetrics and Gynecology,20
+189,Psychiatry,20
+190,Pediatrics,20
+191,Cardiology,20
