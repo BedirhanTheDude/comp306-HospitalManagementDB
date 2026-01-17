@@ -1,26 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Container,
   Box,
   TextField,
   Button,
   Typography,
-  Stack
+  Stack,
+  Alert
 } from '@mui/material';
+import { loginUser } from '../services/loginService';
 
 const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
+  const [fullName, setFullName] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-    //------------INSERT BACKEND CALL HERE ---------------
-      const handleLogin = async () => {
-        //hardcoded true for now, else call verifyLogin
-        const success = true;
+  const handleLogin = async () => {
+    setError('');
+    
+    const request = {
+      fullName,
+      password
+    };
 
-        if (success) {
-          goToHome();
-        } else {
-          setError('Invalid username or password');
-        }
-      };
+    const response = await loginUser(request);
+
+    if (response && response.success) {
+      goToHome();
+    } else {
+      setError(response?.error || 'Login failed. Please try again.');
+    }
+  };
 
   return (
     <Container maxWidth="sm">
@@ -53,15 +63,21 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
           </Typography>
 
           <Stack spacing={2} mt={3}>
+            {error && <Alert severity="error">{error}</Alert>}
+            
             <TextField
               label="Username"
               fullWidth
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
             />
 
             <TextField
               label="Password"
               type="password"
               fullWidth
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
             />
 
             <Button
