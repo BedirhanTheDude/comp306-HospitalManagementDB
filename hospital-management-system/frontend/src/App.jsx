@@ -1,11 +1,20 @@
 import React from 'react';
+import { useState } from 'react';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
 
 function App() {
-  return (
-    <div className="App">
-      <h1>Hospital Management System</h1>
-    </div>
-  );
+  const [page, setPage] = useState('login'); // 'login' | 'signup'
+
+    return (
+      <div className="App">
+        {page === 'login' ? (
+          <LoginPage goToSignup={() => setPage('signup')} />
+        ) : (
+          <SignupPage goToLogin={() => setPage('login')} />
+        )}
+      </div>
+    );
 }
 
 export default App;
