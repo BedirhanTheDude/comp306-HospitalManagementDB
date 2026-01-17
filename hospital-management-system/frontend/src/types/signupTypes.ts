@@ -1,7 +1,7 @@
 export type SignupRequest = {
   fullName: string;
   identityNumber: string;
-  gender: "male" | "female" | "other";
+  gender: "Male" | "Female";
   phoneNumber: string;
   dateOfBirth: string; // "YYYY-MM-DD"
   password: string;
