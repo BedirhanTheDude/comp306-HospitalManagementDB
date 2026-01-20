@@ -10,6 +10,16 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
 
+import com.hospital.dto.CancelAppointmentRequest;
+import com.hospital.dto.CancelAppointmentResponse;
+import com.hospital.dto.CreateAppointmentRequest;
+import com.hospital.dto.CreateAppointmentResponse;
+import com.hospital.dto.DoctorSearchRequest;
+import com.hospital.dto.DoctorSearchResponse;
+import com.hospital.dto.FindAppointmentRequest;
+import com.hospital.dto.FindAppointmentResponse;
+import com.hospital.repositories.AppointmentRepository;
+
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {

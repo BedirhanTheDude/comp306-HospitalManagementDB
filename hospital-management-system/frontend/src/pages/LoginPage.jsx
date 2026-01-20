@@ -11,19 +11,14 @@ import {
 import { loginUser } from '../services/loginService';
 
 const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
     setError('');
-    
-    const request = {
-      fullName,
-      password
-    };
 
-    const response = await loginUser(request);
+    const response = await loginUser(username, password);
 
     if (response && response.success) {
       goToHome();
@@ -68,8 +63,8 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
             <TextField
               label="Username"
               fullWidth
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
 
             <TextField
