@@ -2,13 +2,8 @@ package com.hospital.repositories;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
-import com.hospital.dto.DoctorSearchRequest;
-import com.hospital.dto.DoctorSearchResponse;
 import org.springframework.stereotype.Repository;
 
 @Repository
