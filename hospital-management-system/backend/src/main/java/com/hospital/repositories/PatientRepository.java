@@ -2,12 +2,17 @@ package com.hospital.repositories;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.hospital.dto.DoctorSearchRequest;
+import com.hospital.dto.DoctorSearchResponse;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PatientRepository {
+public class PatientRepository {
      public static void insertPatient(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth) {
         String sql = "INSERT INTO PATIENT(ssn, fullname, gender, phone, dob) VALUES (?, ?, ?, ?, ?)";
 

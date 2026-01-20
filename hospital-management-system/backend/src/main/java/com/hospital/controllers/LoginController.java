@@ -57,8 +57,8 @@ public class LoginController {
         }
         return true;
     }
-    private boolean  authenticateUser(String fullName, String password) {
-        return UserRepository.authenticateUser(fullName, password);
+    private boolean  authenticateUser(String username, String password) {
+        return UserRepository.authenticateUser(username, password);
     }
 
    
