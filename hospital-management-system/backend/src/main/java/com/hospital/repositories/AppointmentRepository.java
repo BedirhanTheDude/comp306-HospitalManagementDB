@@ -22,7 +22,7 @@ public class AppointmentRepository {
             FROM DOCTOR D
             JOIN EMPLOYEE E ON D.ssn = E.ssn
             JOIN POLICLINIC P ON D.poid = P.poid
-            JOIN HOSPITAL_BRANCH HB ON E.bid = HB.bid
+            JOIN HOSPITAL_BRANCH HB ON P.bid = HB.bid
             LEFT JOIN REVIEW R ON D.did = R.did
             WHERE 1=1
         """); // 1=1 is so that we can safely append AND to where clause
