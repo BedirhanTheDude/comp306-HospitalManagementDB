@@ -27,4 +27,9 @@ public class AppointmentController {
     public CancelAppointmentResponse cancelAppointment(@RequestBody CancelAppointmentRequest request) {
         return AppointmentRepository.cancelAppointment(request);
     }
+
+    @PostMapping("/calendar")
+    public List<FindAppointmentResponse> findAppointments(@RequestBody FindAppointmentRequest request) {
+        return AppointmentRepository.findAppointments(request);
+    }
 }

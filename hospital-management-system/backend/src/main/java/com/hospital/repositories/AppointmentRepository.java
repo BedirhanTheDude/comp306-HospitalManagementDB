@@ -198,4 +198,46 @@ public class AppointmentRepository {
             throw new RuntimeException("Error during appointment cancellation.", e);
         }
     }
+
+    // Finds all appointments belonging to a patient
+    public static List<FindAppointmentResponse> findAppointments(FindAppointmentRequest request) {
+        List<FindAppointmentResponse> result = new ArrayList<>();
+        String sql = """
+                SELECT A.aid, A.appt_datetime as date, A.status, A.price, E.fullname, E.gender
+                FROM APPOINTMENT A
+                JOIN DOCTOR D ON A.did = D.did
+                JOIN EMPLOYEE E ON D.ssn = E.ssn
+                WHERE A.pssn = ?
+                """;
+
+        try(Connection conn = DB.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, request.getPatientSSN());
+
+            ResultSet rs = ps.executeQuery();
+            while(rs.next()) {
+                LocalDateTime date = rs.getObject("date", LocalDateTime.class);
+                int year = date.getYear();
+                int month = date.getMonthValue();
+                int day = date.getDayOfMonth();
+                int hour = date.getHour();
+                int minute = date.getMinute();
+
+                FindAppointmentResponse response = new FindAppointmentResponse(
+                        rs.getInt("aid"),
+                        year, month, day, hour, minute,
+                        rs.getString("status"),
+                        rs.getDouble("price"),
+                        rs.getString("fullname"),
+                        rs.getString("gender")
+                );
+
+                result.add(response);
+            }
+
+            return result;
+        } catch (SQLException e) {
+            throw new RuntimeException("Error during appointment search.", e);
+        }
+    }
 }
