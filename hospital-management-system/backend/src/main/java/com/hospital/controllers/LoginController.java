@@ -22,10 +22,20 @@ public class LoginController {
 
         try {
             if(validateUser(loginRequest)){
-                boolean isAuthenticated = authenticateUser(loginRequest.getFullName(), loginRequest.getPassword());
+                boolean isAuthenticated = authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
                 if (isAuthenticated) {
+                    // Get patient details
+                    Map<String, Object> patientInfo = UserRepository.getPatientByUsername(loginRequest.getUsername());
+
                     response.put("success", true);
                     response.put("message", "Login successful");
+
+                    if (patientInfo != null) {
+                        response.put("fullName", patientInfo.get("fullName"));
+                        response.put("ssn", patientInfo.get("ssn"));
+                        response.put("gender", patientInfo.get("gender"));
+                    }
+
                     return ResponseEntity.ok(response);
                 } else {
                     response.put("success", false);
@@ -49,7 +59,7 @@ public class LoginController {
 
     }
     private boolean validateUser(LoginRequest loginRequest) {
-        if (loginRequest.getFullName() == null || loginRequest.getFullName().isEmpty()) {
+        if (loginRequest.getUsername() == null || loginRequest.getUsername().isEmpty()) {
             return false;
         }
         if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {

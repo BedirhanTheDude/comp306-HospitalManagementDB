@@ -2,14 +2,14 @@ package com.hospital.dto;
 
 public class LoginRequest {
     // Login request data transfer object
-    private String fullName;
+    private String username;
     private String password;
 
-    public String getFullName() {
-        return fullName;
+    public String getUsername() {
+        return username;
     }
-    public void setFullName(String fullName) {
-        this.fullName = fullName;
+    public void setUsername(String username) {
+        this.username = username;
     }
     public String getPassword() {
         return password;
@@ -20,8 +20,8 @@ public class LoginRequest {
 
     public LoginRequest() {
     }
-    public LoginRequest(String fullName, String password) {
-        this.fullName = fullName;
+    public LoginRequest(String username, String password) {
+        this.username = username;
         this.password = password;
     }
 

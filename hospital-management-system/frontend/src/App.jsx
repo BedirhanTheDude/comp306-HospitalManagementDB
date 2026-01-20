@@ -6,6 +6,7 @@ import WelcomePage from './pages/WelcomePage';
 import AdminHomePage from './pages/AdminHomePage';
 import DoctorHomePage from './pages/DoctorHomePage';
 import PatientHomePage from './pages/PatientHomePage';
+import AppointmentPage from './pages/AppointmentPage';
 
 function App() {
   const [page, setPage] = useState('welcome'); // welcome | signup | login
@@ -45,7 +46,16 @@ function App() {
 
         {page === 'adminHome' && <AdminHomePage />}
         {page === 'doctorHome' && <DoctorHomePage />}
-        {page === 'patientHome' && <PatientHomePage />}
+        {page === 'patientHome' && (
+          <PatientHomePage
+            goToAppointment={() => setPage('appointment')}
+          />
+        )}
+        {page === 'appointment' && (
+          <AppointmentPage
+            goBack={() => setPage('patientHome')}
+          />
+        )}
       </>
     );
   }

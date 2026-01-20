@@ -35,10 +35,6 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import LocalHospitalOutlinedIcon from "@mui/icons-material/LocalHospitalOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import MonitorHeartOutlinedIcon from "@mui/icons-material/MonitorHeartOutlined";
-import FitnessCenterOutlinedIcon from "@mui/icons-material/FitnessCenterOutlined";
 
 const drawerWidth = 240;
 
@@ -48,24 +44,71 @@ function StatusChip({ status }) {
   return <Chip size="small" label={status || "—"} color={color} variant="outlined" />;
 }
 
-export default function PatientHome() {
-  // ---- PLACEHOLDER / EMPTY DATA (sonradan API ile doldur) ----
-  const user = { fullName: "John Doe", subtitle: "User summary" };
+function SectionHeader({ icon, title, right }) {
+  return (
+    <Stack direction="row" alignItems="center" justifyContent="space-between" sx={{ mb: 2 }}>
+      <Stack direction="row" spacing={1} alignItems="center">
+        {icon}
+        <Typography variant="h6" fontWeight={900}>
+          {title}
+        </Typography>
+      </Stack>
+      {right || null}
+    </Stack>
+  );
+}
+
+function EmptyState({ icon, title, subtitle }) {
+  return (
+    <Box
+      sx={{
+        flexGrow: 1,
+        borderRadius: 3,
+        border: "1px dashed rgba(0,0,0,0.18)",
+        bgcolor: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        p: 3,
+        gap: 2,
+      }}
+    >
+      <Avatar sx={{ width: 48, height: 48 }}>{icon}</Avatar>
+      <Box>
+        <Typography fontWeight={900}>{title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+          {subtitle}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+export default function PatientHome({ goToAppointment }) {
+  // ---- Get user info from localStorage ----
+  const fullName = localStorage.getItem("patientFullName") || "Guest";
+  const ssn = localStorage.getItem("patientSSN") || "";
+  const gender = localStorage.getItem("patientGender") || "";
+
+  const genderDisplay = gender === "M" ? "Male" : gender === "F" ? "Female" : "";
 
   const notifications = []; // [{ id, text, timeAgo }]
   const reports = []; // [{ id, title, date }]
   const upcomingAppointments = []; // [{ id, datetime, doctor, department, status }]
   const previousAppointments = []; // same shape
 
-  const healthOverview = {
-    bloodPressure: "", // "120/80 mmHg"
-    heartRate: "", // "72 bpm"
-    weight: "", // "75 kg"
-  };
-
   const [tab, setTab] = React.useState(0);
-
   const rowsToShow = tab === 0 ? upcomingAppointments : previousAppointments;
+
+  // UI tuning
+  const topCardHeight = 360;
+
+  const cardSx = {
+    borderRadius: 3,
+    height: "100%",
+    border: "1px solid rgba(0,0,0,0.06)",
+    boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+  };
 
   return (
     <Box sx={{ display: "flex", bgcolor: "#EEF3F9", minHeight: "100vh" }}>
@@ -87,23 +130,27 @@ export default function PatientHome() {
       >
         <Toolbar sx={{ minHeight: 72 }}>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <Avatar />
+            <Avatar>{fullName.charAt(0).toUpperCase()}</Avatar>
             <Box>
-              <Typography variant="subtitle1" fontWeight={700}>
-                {user.fullName}
+              <Typography variant="subtitle1" fontWeight={800}>
+                {fullName}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {user.subtitle}
+                {genderDisplay}
               </Typography>
             </Box>
           </Stack>
         </Toolbar>
         <Divider />
         <Box sx={{ p: 2 }}>
-          {/* İstersen buraya menu eklenir */}
-          <Typography variant="caption" color="text.secondary">
-            Sidebar (placeholder)
-          </Typography>
+          <Stack spacing={1}>
+            <Typography variant="caption" color="text.secondary">
+              SSN
+            </Typography>
+            <Typography variant="body2" fontWeight={600}>
+              {ssn || "—"}
+            </Typography>
+          </Stack>
         </Box>
       </Drawer>
 
@@ -119,33 +166,43 @@ export default function PatientHome() {
           }}
         >
           <Toolbar sx={{ minHeight: 72 }}>
-            <Typography variant="h6" fontWeight={800} color="text.primary">
+            <Typography variant="h6" fontWeight={900} color="text.primary">
               Patient Dashboard
             </Typography>
           </Toolbar>
         </AppBar>
 
+        {/* CENTERED CONTENT */}
         <Box sx={{ p: 3 }}>
-          <Grid container spacing={3}>
-            {/* LEFT COLUMN: Notifications + Reports */}
-            <Grid item xs={12} lg={6}>
-              <Stack spacing={3}>
-                {/* Notifications */}
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
-                      <NotificationsNoneIcon />
-                      <Typography variant="h6" fontWeight={800}>
-                        Notifications
-                      </Typography>
-                    </Stack>
+          <Box sx={{ maxWidth: 1200, mx: "auto" }}>
+            <Grid container spacing={3} alignItems="stretch">
+              {/* TOP ROW */}
+              <Grid item xs={12} lg={4} sx={{ display: "flex" }}>
+                <Card sx={{ ...cardSx, minHeight: topCardHeight, flex: 1 }}>
+                  <CardContent
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      p: 3,
+                    }}
+                  >
+                    <SectionHeader
+                      icon={<NotificationsNoneIcon />}
+                      title="Notifications"
+                      right={
+                        <Chip size="small" label={`${notifications.length}`} variant="outlined" />
+                      }
+                    />
 
                     {notifications.length === 0 ? (
-                      <Typography variant="body2" color="text.secondary">
-                        (No notifications yet)
-                      </Typography>
+                      <EmptyState
+                        icon={<NotificationsNoneIcon />}
+                        title="No notifications"
+                        subtitle="You’re all caught up."
+                      />
                     ) : (
-                      <List dense disablePadding>
+                      <List dense disablePadding sx={{ flexGrow: 1 }}>
                         {notifications.map((n) => (
                           <ListItem
                             key={n.id}
@@ -155,6 +212,7 @@ export default function PatientHome() {
                                 {n.timeAgo}
                               </Typography>
                             }
+                            sx={{ py: 1 }}
                           >
                             <ListItemAvatar>
                               <Avatar sx={{ width: 32, height: 32 }}>
@@ -168,23 +226,32 @@ export default function PatientHome() {
                     )}
                   </CardContent>
                 </Card>
+              </Grid>
 
-                {/* My Reports */}
-                <Card sx={{ borderRadius: 3 }}>
-                  <CardContent>
-                    <Stack direction="row" spacing={1} alignItems="center" mb={1.5}>
-                      <InsertDriveFileOutlinedIcon />
-                      <Typography variant="h6" fontWeight={800}>
-                        My Reports
-                      </Typography>
-                    </Stack>
+              <Grid item xs={12} lg={4} sx={{ display: "flex" }}>
+                <Card sx={{ ...cardSx, minHeight: topCardHeight, flex: 1 }}>
+                  <CardContent
+                    sx={{
+                      height: "100%",
+                      display: "flex",
+                      flexDirection: "column",
+                      p: 3,
+                    }}
+                  >
+                    <SectionHeader
+                      icon={<InsertDriveFileOutlinedIcon />}
+                      title="My Reports"
+                      right={<Chip size="small" label={`${reports.length}`} variant="outlined" />}
+                    />
 
                     {reports.length === 0 ? (
-                      <Typography variant="body2" color="text.secondary">
-                        (No reports yet)
-                      </Typography>
+                      <EmptyState
+                        icon={<InsertDriveFileOutlinedIcon />}
+                        title="No reports"
+                        subtitle="Your lab reports will appear here."
+                      />
                     ) : (
-                      <List dense disablePadding>
+                      <List dense disablePadding sx={{ flexGrow: 1 }}>
                         {reports.map((r) => (
                           <ListItem
                             key={r.id}
@@ -194,6 +261,7 @@ export default function PatientHome() {
                                 <DownloadOutlinedIcon fontSize="small" />
                               </IconButton>
                             }
+                            sx={{ py: 1 }}
                           >
                             <ListItemAvatar>
                               <Avatar sx={{ width: 32, height: 32 }}>
@@ -210,197 +278,164 @@ export default function PatientHome() {
                     )}
                   </CardContent>
                 </Card>
-              </Stack>
-            </Grid>
+              </Grid>
 
-            {/* RIGHT COLUMN: Make Appointment */}
-            <Grid item xs={12} lg={6}>
-              <Card sx={{ borderRadius: 3, height: "100%" }}>
-                <CardContent sx={{ height: "100%" }}>
-                  <Typography variant="h6" fontWeight={800} mb={2}>
-                    Make an Appointment
-                  </Typography>
-
-                  <Box
+              <Grid item xs={12} lg={4} sx={{ display: "flex" }}>
+                <Card sx={{ ...cardSx, minHeight: topCardHeight, flex: 1 }}>
+                  <CardContent
                     sx={{
-                      border: "1px solid rgba(0,0,0,0.08)",
-                      borderRadius: 3,
-                      p: 4,
-                      height: "calc(100% - 44px)",
+                      height: "100%",
                       display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
                       flexDirection: "column",
-                      gap: 1.5,
-                      bgcolor: "#fff",
+                      p: 3,
                     }}
                   >
-                    <Avatar sx={{ width: 56, height: 56 }}>
-                      <CalendarMonthOutlinedIcon />
-                    </Avatar>
-                    <Typography variant="h6" fontWeight={900}>
-                      Book New Appointment
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" align="center">
-                      (Placeholder) Book new appointment and tailor it to your needs.
-                    </Typography>
+                    <SectionHeader icon={<CalendarMonthOutlinedIcon />} title="Make an Appointment" />
 
-                    <Button
-                      variant="contained"
-                      size="large"
-                      sx={{ mt: 2, borderRadius: 2, px: 4 }}
-                      startIcon={<CalendarMonthOutlinedIcon />}
-                      onClick={() => {
-                        // TODO: open modal / navigate
+                    <Box
+                      sx={{
+                        flexGrow: 1,
+                        border: "1px solid rgba(0,0,0,0.08)",
+                        borderRadius: 3,
+                        p: 3,
+                        bgcolor: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        flexDirection: "column",
+                        gap: 1.5,
                       }}
                     >
-                      Schedule Now
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+                      <Avatar sx={{ width: 56, height: 56 }}>
+                        <CalendarMonthOutlinedIcon />
+                      </Avatar>
 
-            {/* BOTTOM LEFT: Appointments */}
-            <Grid item xs={12} lg={8}>
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" fontWeight={800} mb={1}>
-                    Appointments
-                  </Typography>
+                      <Typography variant="h6" fontWeight={950} align="center">
+                        Book New Appointment
+                      </Typography>
 
-                  <Tabs
-                    value={tab}
-                    onChange={(_, v) => setTab(v)}
-                    sx={{ mb: 2 }}
-                    textColor="primary"
-                    indicatorColor="primary"
-                  >
-                    <Tab label="Upcoming Appointments" />
-                    <Tab label="Previous Appointments" />
-                  </Tabs>
+                      <Typography variant="body2" color="text.secondary" align="center" sx={{ maxWidth: 260 }}>
+                        Choose a department, doctor, and time slot.
+                      </Typography>
 
-                  <TableContainer component={Paper} variant="outlined" sx={{ borderRadius: 2 }}>
-                    <Table size="small">
-                      <TableHead>
-                        <TableRow>
-                          <TableCell sx={{ fontWeight: 800 }}>Date & Time</TableCell>
-                          <TableCell sx={{ fontWeight: 800 }}>Doctor</TableCell>
-                          <TableCell sx={{ fontWeight: 800 }}>Department</TableCell>
-                          <TableCell sx={{ fontWeight: 800 }}>Status</TableCell>
-                          <TableCell sx={{ fontWeight: 800 }}>Action</TableCell>
-                        </TableRow>
-                      </TableHead>
+                      <Button
+                        variant="contained"
+                        size="large"
+                        sx={{ mt: 1, borderRadius: 2, px: 4 }}
+                        startIcon={<CalendarMonthOutlinedIcon />}
+                        onClick={goToAppointment}
+                      >
+                        Schedule Now
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              </Grid>
 
-                      <TableBody>
-                        {rowsToShow.length === 0 ? (
-                          <TableRow>
-                            <TableCell colSpan={5}>
-                              <Typography variant="body2" color="text.secondary">
-                                (No appointments yet)
-                              </Typography>
-                            </TableCell>
+              {/* BOTTOM ROW: APPOINTMENTS */}
+              <Grid item xs={12}>
+                <Card sx={cardSx}>
+                  <CardContent sx={{ p: 3 }}>
+                    <Stack
+                      direction={{ xs: "column", md: "row" }}
+                      justifyContent="space-between"
+                      alignItems={{ xs: "flex-start", md: "center" }}
+                      spacing={1}
+                      sx={{ mb: 1 }}
+                    >
+                      <Typography variant="h6" fontWeight={900}>
+                        Appointments
+                      </Typography>
+
+                      <Tabs
+                        value={tab}
+                        onChange={(_, v) => setTab(v)}
+                        textColor="primary"
+                        indicatorColor="primary"
+                        sx={{
+                          minHeight: 36,
+                          "& .MuiTab-root": { minHeight: 36, fontWeight: 800 },
+                        }}
+                      >
+                        <Tab label="Upcoming" />
+                        <Tab label="Previous" />
+                      </Tabs>
+                    </Stack>
+
+                    <TableContainer
+                      component={Paper}
+                      variant="outlined"
+                      sx={{ borderRadius: 2, overflow: "hidden" }}
+                    >
+                      <Table size="small">
+                        <TableHead>
+                          <TableRow sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
+                            <TableCell sx={{ fontWeight: 900 }}>Date & Time</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Doctor</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Department</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Status</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Action</TableCell>
                           </TableRow>
-                        ) : (
-                          rowsToShow.map((a) => (
-                            <TableRow key={a.id} hover>
-                              <TableCell>{a.datetime || "—"}</TableCell>
-                              <TableCell>{a.doctor || "—"}</TableCell>
-                              <TableCell>{a.department || "—"}</TableCell>
-                              <TableCell>
-                                <StatusChip status={a.status} />
-                              </TableCell>
-                              <TableCell>
-                                <Stack direction="row" spacing={1}>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    sx={{ borderRadius: 2 }}
-                                    onClick={() => {
-                                      // TODO: reschedule
-                                    }}
-                                  >
-                                    Reschedule
-                                  </Button>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    color="error"
-                                    sx={{ borderRadius: 2 }}
-                                    onClick={() => {
-                                      // TODO: cancel
-                                    }}
-                                  >
-                                    Cancel
-                                  </Button>
+                        </TableHead>
+
+                        <TableBody>
+                          {rowsToShow.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={5} sx={{ py: 4 }}>
+                                <Stack alignItems="center" spacing={0.5}>
+                                  <Typography fontWeight={900}>No appointments yet</Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    When you book one, it will show up here.
+                                  </Typography>
                                 </Stack>
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
-                </CardContent>
-              </Card>
+                          ) : (
+                            rowsToShow.map((a) => (
+                              <TableRow key={a.id} hover>
+                                <TableCell>{a.datetime || "—"}</TableCell>
+                                <TableCell>{a.doctor || "—"}</TableCell>
+                                <TableCell>{a.department || "—"}</TableCell>
+                                <TableCell>
+                                  <StatusChip status={a.status} />
+                                </TableCell>
+                                <TableCell>
+                                  <Stack direction="row" spacing={1}>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      sx={{ borderRadius: 2 }}
+                                      onClick={() => {
+                                        // TODO: reschedule
+                                      }}
+                                    >
+                                      Reschedule
+                                    </Button>
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="error"
+                                      sx={{ borderRadius: 2 }}
+                                      onClick={() => {
+                                        // TODO: cancel
+                                      }}
+                                    >
+                                      Cancel
+                                    </Button>
+                                  </Stack>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
+                  </CardContent>
+                </Card>
+              </Grid>
             </Grid>
-
-            {/* BOTTOM RIGHT: Health Overview */}
-            <Grid item xs={12} lg={4}>
-              <Card sx={{ borderRadius: 3 }}>
-                <CardContent>
-                  <Typography variant="h6" fontWeight={800} mb={2}>
-                    Health Overview
-                  </Typography>
-
-                  <Stack spacing={1.5}>
-                    <OverviewRow
-                      icon={<MonitorHeartOutlinedIcon />}
-                      label="Blood Pressure"
-                      value={healthOverview.bloodPressure || "—"}
-                    />
-                    <OverviewRow
-                      icon={<FavoriteBorderOutlinedIcon />}
-                      label="Heart Rate"
-                      value={healthOverview.heartRate || "—"}
-                    />
-                    <OverviewRow
-                      icon={<FitnessCenterOutlinedIcon />}
-                      label="Weight"
-                      value={healthOverview.weight || "—"}
-                    />
-                  </Stack>
-                </CardContent>
-              </Card>
-            </Grid>
-          </Grid>
+          </Box>
         </Box>
-      </Box>
-    </Box>
-  );
-}
-
-function OverviewRow({ icon, label, value }) {
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        gap: 1.5,
-        p: 1.5,
-        borderRadius: 2,
-        border: "1px solid rgba(0,0,0,0.08)",
-        bgcolor: "#fff",
-      }}
-    >
-      <Avatar sx={{ width: 36, height: 36 }}>{icon}</Avatar>
-      <Box sx={{ flexGrow: 1 }}>
-        <Typography variant="body2" fontWeight={800}>
-          {label}
-        </Typography>
-        <Typography variant="caption" color="text.secondary">
-          {value}
-        </Typography>
       </Box>
     </Box>
   );
