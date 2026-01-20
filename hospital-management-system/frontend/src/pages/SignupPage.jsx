@@ -41,9 +41,9 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
         return false;
     }
 
-    const identityRegex = /^[0-9]{16}$/;
+    const identityRegex = /^[0-9]{11}$/;
     if (!identityRegex.test(identityNumber)) {
-        setError('Identity number must be exactly 16 digits');
+        setError('Identity number must be exactly 11 digits');
         return false;
     }
 
@@ -147,9 +147,8 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
           value={gender}
           onChange={(e) => setGender(e.target.value)}
         >
-          <MenuItem value="male">Male</MenuItem>
-          <MenuItem value="female">Female</MenuItem>
-          <MenuItem value="other">Other</MenuItem>
+          <MenuItem value="M">Male</MenuItem>
+          <MenuItem value="F">Female</MenuItem>
         </TextField>
 
         <TextField
