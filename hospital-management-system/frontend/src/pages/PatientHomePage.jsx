@@ -92,7 +92,7 @@ export default function PatientHome({ goToAppointment }) {
 
   const genderDisplay = gender === "M" ? "Male" : gender === "F" ? "Female" : "";
 
-  const notifications = []; // [{ id, text, timeAgo }]
+  const notifications = [{ text: "Your appointment is confirmed." }]; // [{ id, text, timeAgo }]
   const reports = []; // [{ id, title, date }]
   const upcomingAppointments = []; // [{ id, datetime, doctor, department, status }]
   const previousAppointments = []; // same shape

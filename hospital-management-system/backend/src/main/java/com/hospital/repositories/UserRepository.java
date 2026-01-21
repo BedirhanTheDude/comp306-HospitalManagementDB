@@ -62,7 +62,7 @@ public class UserRepository {
     public static Map<String, Object> getPatientByUsername(String username) {
         // USER tablosundaki username = PATIENT tablosundaki fullname
         // Case-insensitive karşılaştırma için LOWER kullanıyoruz
-        String sql = "SELECT p.ssn, p.fullname, p.gender FROM PATIENT p, USER u WHERE u.username = p.fullname";
+        String sql = "SELECT ssn, fullname, gender FROM PATIENT WHERE LOWER(fullname) = LOWER(?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
