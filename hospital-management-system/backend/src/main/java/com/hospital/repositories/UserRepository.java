@@ -39,7 +39,7 @@ public class UserRepository {
     
     public static boolean authenticateUser(String username, String password) {
         // Case-insensitive username karşılaştırması
-        String sql = "SELECT password_hash FROM USER WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT password FROM USER WHERE LOWER(username) = LOWER(?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -62,8 +62,7 @@ public class UserRepository {
     public static Map<String, Object> getPatientByUsername(String username) {
         // USER tablosundaki username = PATIENT tablosundaki fullname
         // Case-insensitive karşılaştırma için LOWER kullanıyoruz
-        String sql = "SELECT p.ssn, p.fullname, p.gender FROM PATIENT p, USER u " +
-                "WHERE p.username = u.username AND p.username = ?";
+        String sql = "SELECT ssn, fullname, gender FROM PATIENT WHERE LOWER(fullname) = LOWER(?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
