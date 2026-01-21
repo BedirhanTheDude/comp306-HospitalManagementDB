@@ -1,15 +1,16 @@
 package com.hospital.repositories;
 
 //Marks this class as a repository component in Spring
-import org.springframework.stereotype.Repository;
-
-//JDBC classes for database connection and query execution:
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-//Utility classes for collections
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
 
 
 
@@ -73,6 +74,25 @@ public class NotificationRepository {
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getBoolean("overdue");
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public static boolean checkDiscountEligibility(int patientssn) {
+        String sql =
+                "SELECT (COUNT(aid) > 9) as discount_eligible " +
+                "   FROM patient join appointment on pssn = ssn " +
+                "   WHERE ssn = ? " +
+                "     AND appt_datetime > NOW() ";
+        try (Connection conn=DB.getConnection();
+             PreparedStatement ps=conn.prepareStatement(sql)) {
+            ps.setInt(1, patientssn);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("discount_eligible");
             }
         }catch (SQLException e) {
             e.printStackTrace();

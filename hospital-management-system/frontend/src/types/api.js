@@ -124,8 +124,23 @@ export const CancelAppointmentRequest = ({}) => ({
 });
 
 
-
-
+// Create review request
+/**
+ * @param {Object} params
+ * @param {number} params.appointmentID
+ * @param {number} params.rating
+ * @param {string} params.comment
+ * @returns {Object} CancelAppointmentRequest
+ */
+export const createReviewRequest= ({
+   appointmentID,
+  rating,
+  comment,
+}) => ({
+  appointmentID,
+  rating,
+  comment,
+});
 /**
  * API Response structure
  * @typedef {Object} ApiResponse
