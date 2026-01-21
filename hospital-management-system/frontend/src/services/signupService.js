@@ -9,6 +9,7 @@ import { createSignUpRequest } from '../types/api';
  * @param {string} params.gender - 'M' or 'F'
  * @param {string} params.phoneNumber - Phone number
  * @param {string} params.dateOfBirth - Date of birth (YYYY-MM-DD)
+ * @param {string} params.username - Patient's username
  * @param {string} params.password - Password
  * @returns {Promise<{success: boolean, message?: string, error?: string}>}
  */

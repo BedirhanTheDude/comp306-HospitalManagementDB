@@ -8,8 +8,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public class PatientRepository {
-     public static void insertPatient(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth) {
-        String sql = "INSERT INTO PATIENT(ssn, fullname, gender, phone, dob) VALUES (?, ?, ?, ?, ?)";
+     public static void insertPatient(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth, String username) {
+        String sql = "INSERT INTO PATIENT(ssn, fullname, gender, phone, dob, username) VALUES (?, ?, ?, ?, ?, ?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -19,6 +19,7 @@ public class PatientRepository {
             ps.setString(3, gender);
             ps.setString(4, phoneNumber);
             ps.setString(5, dateOfBirth);
+            ps.setString(6, username);
 
             ps.executeUpdate(); // INSERT çalıştırır
             System.out.println("User inserted successfully!");

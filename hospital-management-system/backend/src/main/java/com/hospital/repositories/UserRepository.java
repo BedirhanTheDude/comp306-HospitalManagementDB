@@ -61,7 +61,7 @@ public class UserRepository {
 
     public static Map<String, Object> getPatientByUsername(String username) {
         // PATIENT tablosundaki username kolonu ile eşleştir
-        String sql = "SELECT ssn, fullname, gender FROM PATIENT WHERE LOWER(username) = LOWER(?)";
+        String sql = "SELECT ssn, fullname, gender FROM PATIENT WHERE username = ?";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

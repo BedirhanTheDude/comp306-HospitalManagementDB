@@ -28,9 +28,10 @@ public class SignUpController {
                 String gender = signUpRequest.getGender();
                 String phone = signUpRequest.getPhoneNumber();
                 String dob = signUpRequest.getDateOfBirth();
+                String username = signUpRequest.getUsername();
                 String password = signUpRequest.getPassword();
 
-                savePatientData(ssn, fullName, gender, phone, dob, password);
+                savePatientData(ssn, fullName, gender, phone, dob, username, password);
 
                 response.put("success", true);
                 response.put("message", "Patient registered successfully");
@@ -66,9 +67,9 @@ public class SignUpController {
         return true;
     }
 
-    private void savePatientData(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth, String password) {
-        PatientRepository.insertPatient(identityNumber, fullName, gender, phoneNumber, dateOfBirth);
-        UserRepository.insertUser(fullName, password, "PATIENT");
+    private void savePatientData(String identityNumber, String fullName, String gender, String phoneNumber, String dateOfBirth, String username, String password) {
+        UserRepository.insertUser(username, password, "PATIENT"); // Always insert user first because of foreign key constraints on username
+        PatientRepository.insertPatient(identityNumber, fullName, gender, phoneNumber, dateOfBirth, username);
     }
     
 }

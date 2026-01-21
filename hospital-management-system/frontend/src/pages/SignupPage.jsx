@@ -15,6 +15,7 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
   const [gender, setGender] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [birthDate, setBirthDate] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
@@ -41,9 +42,9 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
         return false;
     }
 
-    const identityRegex = /^[0-9]{11}$/;
+    const identityRegex = /^[0-9]{9}$/;
     if (!identityRegex.test(identityNumber)) {
-        setError('Identity number must be exactly 11 digits');
+        setError('Identity number must be exactly 9 digits');
         return false;
     }
 
@@ -88,6 +89,7 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
       gender,
       phoneNumber,
       dateOfBirth: birthDate,
+      username,
       password,
     };
 
@@ -169,6 +171,15 @@ const SignupPage = ({ goToLogin, goToWelcome, goToHome }) => {
           InputLabelProps={{ shrink: true }}
           value={birthDate}
           onChange={(e) => setBirthDate(e.target.value)}
+        />
+
+        <TextField
+          label="Username"
+          type="username"
+          margin="normal"
+          fullWidth
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
         />
 
         <TextField

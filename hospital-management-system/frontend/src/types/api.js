@@ -28,6 +28,7 @@ export const createLoginRequest = (username, password) => ({
  * @param {string} params.gender - 'M' or 'F'
  * @param {string} params.phoneNumber - Phone number
  * @param {string} params.dateOfBirth - Date of birth (YYYY-MM-DD)
+ * @param {string} params.username - Patient's username
  * @param {string} params.password - Password
  * @returns {Object} SignUpRequest compatible with backend
  */
@@ -37,6 +38,7 @@ export const createSignUpRequest = ({
   gender,
   phoneNumber,
   dateOfBirth,
+  username,
   password,
 }) => ({
   identityNumber,
@@ -44,6 +46,7 @@ export const createSignUpRequest = ({
   gender,
   phoneNumber,
   dateOfBirth,
+  username,
   password,
 });
 /**
