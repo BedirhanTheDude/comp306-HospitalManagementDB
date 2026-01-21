@@ -1,5 +1,7 @@
 // PatientHome.jsx
 import * as React from "react";
+import axios from "axios";
+
 import {
   AppBar,
   Avatar,
@@ -84,6 +86,8 @@ function EmptyState({ icon, title, subtitle }) {
   );
 }
 
+
+
 export default function PatientHome({ goToAppointment }) {
   // ---- Get user info from localStorage ----
   const fullName = localStorage.getItem("patientFullName") || "Guest";
@@ -92,7 +96,69 @@ export default function PatientHome({ goToAppointment }) {
 
   const genderDisplay = gender === "M" ? "Male" : gender === "F" ? "Female" : "";
 
-  const notifications = []; // [{ id, text, timeAgo }]
+  const [notifications, setNotifications] = React.useState([]); 
+
+  React.useEffect(() => {
+  async function fetchNotifications() {
+    const newNotifications = [];
+
+    try {
+     
+      //Epidemic notifications
+      const epidemicRes = await fetch(
+        "http://localhost:8080/api/notifications/epidemics"
+      );
+      const epidemicData = await epidemicRes.json();
+
+      if (epidemicData.success && epidemicData.data.length > 0) {
+        newNotifications.push({
+          id: "epidemic",
+          text: epidemicData.message,
+          timeAgo: "Last month",
+        });
+      }
+
+      //Blood test overdue notification
+      if (ssn) {
+        const testRes = await fetch(
+          `http://localhost:8080/api/notifications/test?patientssn=${ssn}`
+        );
+        const testData = await testRes.json();
+
+        const message = Object.keys(testData)[0];
+        const isOverdue = testData[message];
+
+        if (isOverdue) {
+          newNotifications.push({
+            id: "blood-test",
+            text: message,
+            timeAgo: "6+ months",
+          });
+        }
+
+        const discountRes = await fetch(
+          `http://localhost:8080/api/notifications/discounts?patientssn=${ssn}`
+        );
+        const discountData = await discountRes.json();
+
+        if (discountData.success) {
+          newNotifications.push({
+            id: "discount",
+            text: discountData.message,
+            timeAgo: "Just now",
+          });
+        }
+      }
+
+      setNotifications(newNotifications);
+    } catch (err) {
+      console.error("Failed to fetch notifications", err);
+    }
+  }
+
+  fetchNotifications();
+}, [ssn]);
+
   const reports = []; // [{ id, title, date }]
   const upcomingAppointments = []; // [{ id, datetime, doctor, department, status }]
   const previousAppointments = []; // same shape

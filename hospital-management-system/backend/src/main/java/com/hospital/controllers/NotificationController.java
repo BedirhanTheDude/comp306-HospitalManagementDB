@@ -64,16 +64,17 @@ public class NotificationController {
     public ResponseEntity<Map<String, Object>> getDiscounts(
         @RequestParam int patientssn) {
         Map<String, Object> response = new HashMap<>();
-        boolean hasDiscounts = NotificationRepository.checkDiscountEligibility(patientssn);
 
         try {
-            if (hasDiscounts) {
-                response.put("success", true);
-                response.put("message", "There are patients eligible for discounts.");
-            } else {
-                response.put("success", true);
-                response.put("message", "No patients eligible for discounts.");
-            }
+            boolean hasDiscounts = NotificationRepository.checkDiscountEligibility(patientssn);
+            response.put("success", true);
+            response.put(
+                "message",
+                hasDiscounts
+                    ? "You are eligible for a 20% discount on tests."
+                    : "You are not eligible for any discounts."
+            );
+
             return ResponseEntity.ok(response);
 
         } catch (Exception e) {
