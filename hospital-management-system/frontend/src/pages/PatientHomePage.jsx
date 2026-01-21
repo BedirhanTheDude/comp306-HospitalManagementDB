@@ -141,7 +141,7 @@ export default function PatientHome({ goToAppointment }) {
         );
         const discountData = await discountRes.json();
 
-        if (discountData.success) {
+        if (discountData == true) {
           newNotifications.push({
             id: "discount",
             text: discountData.message,
