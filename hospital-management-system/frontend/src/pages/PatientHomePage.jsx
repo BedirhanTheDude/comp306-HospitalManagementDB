@@ -47,7 +47,7 @@ import CoronavirusIcon from "@mui/icons-material/Coronavirus";
 import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { findAppointments, cancelAppointment } from "../services/appointmentService";
-import { listTestResults, deleteTestResult, reviewAppointment , getBloodTestWarning, getDiscountNotification, getEpidemicsWarning} from "../services/patientService";
+import { listTestResults, deleteTestResult, reviewAppointment , getBloodTestWarning, getDiscountNotification, getEpidemicsWarning, getAbnormalTestNotification} from "../services/patientService";
 
 const drawerWidth = 240;
 
@@ -308,6 +308,19 @@ export default function PatientHome({ goToAppointment }) {
               type: "success",
             });
           }
+        }
+
+        const abnormalRes = await getAbnormalTestNotification(ssn);
+        if (abnormalRes?.success && Array.isArray(abnormalRes.data)) {
+          abnormalRes.data.forEach((item, idx) => {
+            notificationList.push({
+              id: item.id || `abnormal_test_${idx}`,
+              text:
+                item.text ||
+                "One or more of your recent test results are outside the normal range.",
+              type: item.type || "warning",
+            });
+          });
         }
 
         // Epidemic warnings

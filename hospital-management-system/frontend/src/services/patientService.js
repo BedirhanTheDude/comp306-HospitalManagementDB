@@ -112,4 +112,20 @@ export const getDiscountNotification = async (patientSSN) => {
   }
 };
 
+export const getAbnormalTestNotification = async (patientSSN) => {
+  try {
+    const response = await api.get('/notifications/abnormal-tests', {
+      params: { patientssn: Number(patientSSN) }
+    });
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error.response?.data?.error ||
+        'Could not fetch abnormal test notifications.',
+    };
+  }
+};
+
 
