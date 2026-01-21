@@ -79,4 +79,26 @@ public class NotificationRepository {
         }
         return false;
     }
+
+    public static boolean checkDiscountEligibility(int patientssn) {
+        String sql =
+                "SELECT ( " +
+                        "   SELECT 1 " +
+                        "   FROM patient join appointment on pssn = ssn " +
+                        "   WHERE ssn = ? " +
+                        "     AND appt_datetime > NOW() " +
+                        "     AND COUNT(*) > 9 " +
+                        ") AS discount_eligible";
+        try (Connection conn=DB.getConnection();
+             PreparedStatement ps=conn.prepareStatement(sql)) {
+            ps.setInt(1, patientssn);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("discount_eligible");
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }

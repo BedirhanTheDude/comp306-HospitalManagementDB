@@ -60,4 +60,27 @@ public class NotificationController {
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/discounts")
+    public ResponseEntity<Map<String, Object>> getDiscounts(
+        @RequestParam int patientssn) {
+        Map<String, Object> response = new HashMap<>();
+        boolean hasDiscounts = NotificationRepository.checkDiscountEligibility(patientssn);
+
+        try {
+            if (hasDiscounts) {
+                response.put("success", true);
+                response.put("message", "There are patients eligible for discounts.");
+            } else {
+                response.put("success", true);
+                response.put("message", "No patients eligible for discounts.");
+            }
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+
 }
