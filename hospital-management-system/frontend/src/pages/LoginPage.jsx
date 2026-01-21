@@ -11,36 +11,21 @@ import {
 import { loginUser } from '../services/loginService';
 
 const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
-  const [fullName, setFullName] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
   const handleLogin = async () => {
     setError('');
 
-    const request = {
-      fullName,
-      password,
-      role
-    };
-
-    const response = await loginUser(request);
+    const response = await loginUser(username, password);
 
     if (response && response.success) {
-      localStorage.setItem('auth_role', role);
-      if (response.doctorId) {
-        localStorage.setItem('doctor_id', String(response.doctorId));
-      }
       goToHome();
     } else {
       setError(response?.error || 'Login failed. Please try again.');
     }
   };
-
-  // Role'a göre label ve placeholder
-  const usernameLabel = role === 'DOCTOR' ? 'Email/Username' : 'Full Name';
-  const usernamePlaceholder =
-    role === 'DOCTOR' ? 'Enter your email or username' : 'Enter your full name';
 
   return (
     <Container maxWidth="sm">
@@ -74,13 +59,12 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
           <Stack spacing={2} mt={3}>
             {error && <Alert severity="error">{error}</Alert>}
-
+            
             <TextField
-              label={usernameLabel}
-              placeholder={usernamePlaceholder}
+              label="Username"
               fullWidth
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
             />
 
             <TextField
@@ -102,12 +86,20 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
             {/* Patient-only signup */}
             {role === 'PATIENT' && (
-              <Button variant="outlined" fullWidth onClick={goToSignup}>
+              <Button
+                variant="outlined"
+                fullWidth
+                onClick={goToSignup}
+              >
                 Sign Up
               </Button>
             )}
 
-            <Button variant="text" fullWidth onClick={goToWelcome}>
+            <Button
+              variant="text"
+              fullWidth
+              onClick={goToWelcome}
+            >
               Back to Welcome
             </Button>
           </Stack>

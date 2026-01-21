@@ -12,7 +12,7 @@ import java.util.List;
 @Repository
 public class DoctorAppointmentsRepository {
 
-    // 🔹 Belirli gün (date picker için)
+    //  Belirli gün (date picker için)
     public List<DoctorAppointmentResponse> getDoctorAppointmentsOnDate(long doctorId, LocalDate date) {
 
         LocalDateTime start = date.atStartOfDay();
@@ -52,7 +52,7 @@ public class DoctorAppointmentsRepository {
         return out;
     }
 
-    // 🔹 BUGÜN / GELECEK RANDEVULAR (GARANTİLİ ÇALIŞAN)
+    //  BUGÜN / GELECEK RANDEVULAR (GARANTİLİ ÇALIŞAN)
     public List<DoctorAppointmentResponse> getUpcomingAppointments(long doctorId) {
 
         String sql =
