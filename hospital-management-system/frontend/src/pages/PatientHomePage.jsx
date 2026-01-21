@@ -15,6 +15,7 @@ import {
   List,
   ListItem,
   ListItemAvatar,
+  ListItemButton,
   ListItemText,
   Stack,
   Tab,
@@ -33,13 +34,20 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  TextField,
+  Rating,
 } from "@mui/material";
 
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import WarningAmberIcon from "@mui/icons-material/WarningAmber";
+import LocalOfferIcon from "@mui/icons-material/LocalOffer";
+import CoronavirusIcon from "@mui/icons-material/Coronavirus";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import { findAppointments, cancelAppointment } from "../services/appointmentService";
-import { listTestResults, deleteTestResult } from "../services/patientService";
+import { listTestResults, deleteTestResult, reviewAppointment , getBloodTestWarning, getDiscountNotification, getEpidemicsWarning} from "../services/patientService";
 
 const drawerWidth = 240;
 
@@ -106,9 +114,8 @@ export default function PatientHome({ goToAppointment }) {
   const genderDisplay = gender === "M" ? "Male" : gender === "F" ? "Female" : "";
 
   // Notifications (placeholder)
-  const notifications = [
-    { id: 1, text: "Your appointment is confirmed.", timeAgo: "Just now" },
-  ];
+ const [notifications, setNotifications] = React.useState([]);
+  
 
   // -----------------------------
   // ✅ TEST RESULTS (My Reports) FRONTEND INTEGRATION
@@ -175,6 +182,41 @@ export default function PatientHome({ goToAppointment }) {
     }
   };
 
+  // Review dialog state
+  const [openReviewDialog, setOpenReviewDialog] = React.useState(false);
+  const [selectedAppointment, setSelectedAppointment] = React.useState(null);
+  const [reviewRating, setReviewRating] = React.useState(0);
+  const [reviewComment, setReviewComment] = React.useState("");
+
+  const openReview = (appointment) => {
+    setSelectedAppointment(appointment);
+    setReviewRating(0);
+    setReviewComment("");
+    setOpenReviewDialog(true);
+  };
+
+  const closeReview = () => {
+    setOpenReviewDialog(false);
+    setSelectedAppointment(null);
+    setReviewRating(0);
+    setReviewComment("");
+  };
+
+  const handleSubmitReview = async () => {
+    if (!selectedAppointment || reviewRating === 0) return;
+    const request = {
+      appointmentID: selectedAppointment.appointmentID,
+      rating: reviewRating,
+      comment: reviewComment,
+    };
+    const response = await reviewAppointment(request);
+    if (response.success) {
+      closeReview();
+    } else {
+      console.error("Review failed:", response.error);
+    }
+  };
+
   // Appointments from backend
   const [appointments, setAppointments] = React.useState([]);
 
@@ -233,8 +275,88 @@ export default function PatientHome({ goToAppointment }) {
         setTestResults([]);
       }
     }
+
+    const loadNotifications = async () => {
+      if (!ssn) return;
+      try {
+        const notificationList = [];
+
+        // Blood test warning
+        const testRes = await getBloodTestWarning(ssn);
+        if (testRes?.success && Array.isArray(testRes.data)) {
+          // New format with data array
+          testRes.data.forEach((item, idx) => {
+            notificationList.push({
+              id: item.id || `blood_test_${idx}`,
+              text: item.text || "You have not had a blood test in the last 6 months.",
+              type: item.type || "warning",
+            });
+          });
+        } else if (testRes) {
+          // Old format: {"message text": true/false}
+          const keys = Object.keys(testRes).filter(k => k !== 'success' && k !== 'error' && k !== 'message');
+          if (keys.length > 0 && testRes[keys[0]] === true) {
+            notificationList.push({
+              id: "blood_test_warning",
+              text: keys[0],
+              type: "warning",
+            });
+          } else {
+            notificationList.push({
+              id: "blood_test_status",
+              text: "Your blood test records are up to date.",
+              type: "success",
+            });
+          }
+        }
+
+        // Epidemic warnings
+        const epidemicRes = await getEpidemicsWarning();
+        if (epidemicRes?.success && Array.isArray(epidemicRes.data)) {
+          epidemicRes.data.forEach((item, idx) => {
+            // Handle both old format (diagnosis, count) and new format (id, text, type)
+            const text = item.text || `Warning: ${item.diagnosis} outbreak detected (${item.count} cases this month)`;
+            notificationList.push({
+              id: item.id || `epidemic_${idx}`,
+              text: text,
+              type: item.type || "epidemic",
+            });
+          });
+        }
+
+        // Discount notifications
+        const discountRes = await getDiscountNotification(ssn);
+        if (discountRes?.success && Array.isArray(discountRes.data)) {
+          // New format with data array
+          discountRes.data.forEach((item, idx) => {
+            notificationList.push({
+              id: item.id || `discount_${idx}`,
+              text: item.text || "You are eligible for a 20% discount on tests.",
+              type: item.type || "info",
+            });
+          });
+        } else if (discountRes?.success && discountRes.message) {
+          // Old format with message field
+          const isEligible = discountRes.message.toLowerCase().includes("eligible") &&
+                            !discountRes.message.toLowerCase().includes("not eligible");
+          notificationList.push({
+            id: "discount_status",
+            text: discountRes.message,
+            type: isEligible ? "info" : "neutral",
+          });
+        }
+
+        setNotifications(notificationList);
+      } catch (error) {
+        console.error("Error fetching notifications:", error);
+        setNotifications([]);
+      }
+    }
+
+
     loadAppointments();
     loadTestResults();
+    loadNotifications();
   }, [ssn]);
 
   // Filter appointments into upcoming and previous
@@ -358,30 +480,61 @@ export default function PatientHome({ goToAppointment }) {
                       <EmptyState
                         icon={<NotificationsNoneIcon />}
                         title="No notifications"
-                        subtitle="You’re all caught up."
+                        subtitle="You're all caught up."
                       />
                     ) : (
-                      <List dense disablePadding sx={{ flexGrow: 1 }}>
-                        {notifications.map((n) => (
-                          <ListItem
-                            key={n.id}
-                            disableGutters
-                            secondaryAction={
-                              <Typography variant="caption" color="text.secondary">
-                                {n.timeAgo}
-                              </Typography>
-                            }
-                            sx={{ py: 1 }}
-                          >
-                            <ListItemAvatar>
-                              <Avatar sx={{ width: 32, height: 32 }}>
-                                <NotificationsNoneIcon fontSize="small" />
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText primary={n.text} />
-                          </ListItem>
-                        ))}
-                      </List>
+                      <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 280 }}>
+                        <Stack spacing={1.5}>
+                          {notifications.map((n) => {
+                            // Define styles based on notification type
+                            const typeStyles = {
+                              warning: { bg: "#FFF3E0", border: "#FFB74D", icon: "#F57C00", Icon: WarningAmberIcon },
+                              epidemic: { bg: "#FFEBEE", border: "#EF5350", icon: "#D32F2F", Icon: CoronavirusIcon },
+                              success: { bg: "#E8F5E9", border: "#81C784", icon: "#388E3C", Icon: CheckCircleOutlineIcon },
+                              info: { bg: "#E3F2FD", border: "#64B5F6", icon: "#1976D2", Icon: LocalOfferIcon },
+                              neutral: { bg: "#F5F5F5", border: "#BDBDBD", icon: "#757575", Icon: InfoOutlinedIcon },
+                            };
+
+                            const style = typeStyles[n.type] || typeStyles.neutral;
+                            const { bg: bgColor, border: borderColor, icon: iconColor, Icon } = style;
+
+                            return (
+                              <Paper
+                                key={n.id}
+                                elevation={0}
+                                sx={{
+                                  p: 1.5,
+                                  borderRadius: 2,
+                                  bgcolor: bgColor,
+                                  border: `1px solid ${borderColor}`,
+                                }}
+                              >
+                                <Stack direction="row" spacing={1.5} alignItems="flex-start">
+                                  <Avatar
+                                    sx={{
+                                      width: 36,
+                                      height: 36,
+                                      bgcolor: "white",
+                                      border: `2px solid ${borderColor}`,
+                                    }}
+                                  >
+                                    <Icon sx={{ color: iconColor, fontSize: 20 }} />
+                                  </Avatar>
+                                  <Box sx={{ flex: 1 }}>
+                                    <Typography
+                                      variant="body2"
+                                      fontWeight={600}
+                                      sx={{ color: "text.primary", lineHeight: 1.4 }}
+                                    >
+                                      {n.text}
+                                    </Typography>
+                                  </Box>
+                                </Stack>
+                              </Paper>
+                            );
+                          })}
+                        </Stack>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
@@ -416,41 +569,34 @@ export default function PatientHome({ goToAppointment }) {
                       <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 250 }}>
                         <List dense disablePadding>
                           {testResults.map((r) => (
-                            <ListItem
-                              key={r.testID}
-                              disableGutters
-                              button
-                              onClick={() => openReport(r)}
-                              sx={{
-                                py: 1,
-                                borderRadius: 2,
-                                px: 1,
-                                "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
-                              }}
-                              secondaryAction={
-                                <Typography variant="caption" color="text.secondary">
-                                  {formatReportDate(r)}
-                                </Typography>
-                              }
-                            >
-                              <ListItemAvatar>
-                                <Avatar sx={{ width: 32, height: 32 }}>
-                                  <InsertDriveFileOutlinedIcon fontSize="small" />
-                                </Avatar>
-                              </ListItemAvatar>
+                            <ListItem key={r.testID} disablePadding>
+                              <ListItemButton
+                                onClick={() => openReport(r)}
+                                sx={{
+                                  py: 1,
+                                  borderRadius: 2,
+                                  px: 1,
+                                }}
+                              >
+                                <ListItemAvatar>
+                                  <Avatar sx={{ width: 32, height: 32 }}>
+                                    <InsertDriveFileOutlinedIcon fontSize="small" />
+                                  </Avatar>
+                                </ListItemAvatar>
 
-                              <ListItemText
-                                primary={
-                                  <Typography fontWeight={800} noWrap>
-                                    {r.testName || "—"}
-                                  </Typography>
-                                }
-                                secondary={
-                                  <Typography variant="caption" color="text.secondary" noWrap>
-                                    Tap to view details
-                                  </Typography>
-                                }
-                              />
+                                <ListItemText
+                                  primary={
+                                    <Typography fontWeight={800} noWrap>
+                                      {r.testName || "—"}
+                                    </Typography>
+                                  }
+                                  secondary={
+                                    <Typography variant="caption" color="text.secondary" noWrap>
+                                      {formatReportDate(r)}
+                                    </Typography>
+                                  }
+                                />
+                              </ListItemButton>
                             </ListItem>
                           ))}
                         </List>
@@ -460,8 +606,8 @@ export default function PatientHome({ goToAppointment }) {
                 </Card>
               </Grid>
 
-              <Grid item xs={12} lg={4} sx={{ display: "flex" }}>
-                <Card sx={{ ...cardSx, minHeight: topCardHeight, flex: 1 }}>
+              <Grid item xs={12} lg={4}>
+                <Card sx={{ ...cardSx, height: topCardHeight }}>
                   <CardContent
                     sx={{
                       height: "100%",
@@ -607,7 +753,15 @@ export default function PatientHome({ goToAppointment }) {
                                       Cancel
                                     </Button>
                                   ) : (
-                                    "—"
+                                    <Button
+                                      size="small"
+                                      variant="outlined"
+                                      color="primary"
+                                      sx={{ borderRadius: 2 }}
+                                      onClick={() => openReview(a)}
+                                    >
+                                      Review
+                                    </Button>
                                   )}
                                 </TableCell>
                               </TableRow>
@@ -667,8 +821,8 @@ export default function PatientHome({ goToAppointment }) {
                 </Typography>
                 <Chip
                   size="small"
-                  label={selectedReport?.isBetweenRange ? "Within range" : "Out of range"}
-                  color={selectedReport?.isBetweenRange ? "success" : "error"}
+                  label={selectedReport?.betweenRange ? "Within range" : "Out of range"}
+                  color={selectedReport?.betweenRange ? "success" : "error"}
                   variant="outlined"
                 />
               </Stack>
@@ -695,6 +849,60 @@ export default function PatientHome({ goToAppointment }) {
             </Button>
             <Button onClick={closeReport} sx={{ borderRadius: 2 }}>
               Close
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* REVIEW APPOINTMENT DIALOG */}
+        <Dialog open={openReviewDialog} onClose={closeReview} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ fontWeight: 900 }}>
+            Review Appointment
+          </DialogTitle>
+
+          <DialogContent dividers>
+            <Stack spacing={3}>
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Doctor
+                </Typography>
+                <Typography fontWeight={800}>
+                  {selectedAppointment?.doctorFullName || "—"}
+                </Typography>
+              </Stack>
+
+              <Stack spacing={1}>
+                <Typography variant="body2" color="text.secondary">
+                  Rating
+                </Typography>
+                <Rating
+                  value={reviewRating}
+                  onChange={(_, newValue) => setReviewRating(newValue || 0)}
+                  size="large"
+                />
+              </Stack>
+
+              <TextField
+                label="Comment (optional)"
+                multiline
+                rows={3}
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                fullWidth
+              />
+            </Stack>
+          </DialogContent>
+
+          <DialogActions>
+            <Button onClick={closeReview} sx={{ borderRadius: 2 }}>
+              Cancel
+            </Button>
+            <Button
+              variant="contained"
+              sx={{ borderRadius: 2 }}
+              onClick={handleSubmitReview}
+              disabled={reviewRating === 0}
+            >
+              Submit Review
             </Button>
           </DialogActions>
         </Dialog>
