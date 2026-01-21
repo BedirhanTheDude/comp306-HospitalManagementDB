@@ -58,4 +58,25 @@ public class NotificationRepository {
             return null;
         }
     }
+
+    public static boolean getPatientIfBloodTestOverdue(int patientssn) {
+        String sql =
+                "SELECT NOT EXISTS ( " +
+                        "   SELECT 1 " +
+                        "   FROM test_result tr " +
+                        "   WHERE tr.pssn = ? " +
+                        "     AND tr.measured_at >= (NOW() - INTERVAL 6 MONTH) " +
+                        ") AS overdue";
+        try (Connection conn=DB.getConnection();
+             PreparedStatement ps=conn.prepareStatement(sql)) {
+            ps.setInt(1, patientssn);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getBoolean("overdue");
+            }
+        }catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
