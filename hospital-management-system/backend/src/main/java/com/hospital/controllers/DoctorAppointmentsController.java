@@ -20,7 +20,7 @@ public class DoctorAppointmentsController {
     // GET /api/doctors/{doctorId}/appointments/today
     @GetMapping("/{doctorId}/appointments/today")
     public List<DoctorAppointmentResponse> today(@PathVariable long doctorId) {
-        return repo.getDoctorAppointmentsOnDate(doctorId, LocalDate.now());
+        return repo.getUpcomingAppointments(doctorId);
     }
 
     // (opsiyonel) GET /api/doctors/{doctorId}/appointments?date=2026-01-21

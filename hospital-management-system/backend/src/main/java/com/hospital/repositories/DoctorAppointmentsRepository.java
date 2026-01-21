@@ -12,14 +12,14 @@ import java.util.List;
 @Repository
 public class DoctorAppointmentsRepository {
 
+    // 🔹 Belirli gün (date picker için)
     public List<DoctorAppointmentResponse> getDoctorAppointmentsOnDate(long doctorId, LocalDate date) {
 
-        // Sağlam filtre: [date 00:00, next day 00:00)
         LocalDateTime start = date.atStartOfDay();
         LocalDateTime end = date.plusDays(1).atStartOfDay();
 
         String sql =
-            "SELECT a.aid, a.appt_datetime, a.status, a.pssn, p.fullname " +
+            "SELECT a.aid, a.appt_datetime, a.status, p.fullname " +
             "FROM APPOINTMENT a " +
             "JOIN PATIENT p ON p.ssn = a.pssn " +
             "WHERE a.did = ? AND a.appt_datetime >= ? AND a.appt_datetime < ? " +
@@ -36,20 +36,52 @@ public class DoctorAppointmentsRepository {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                int appointmentId = rs.getInt("aid");
-                String dt = rs.getTimestamp("appt_datetime").toLocalDateTime().toString();
-                String status = rs.getString("status");
-
-                // DoctorAppointmentResponse (appointmentId, dt, status, patientId, patientFullName)
-                // Bizde patient_id yok -> placeholder 0 veriyoruz.
-                // patientFullName olarak PATIENT.fullname veriyoruz.
-                String patientFullName = rs.getString("fullname");
-
-                out.add(new DoctorAppointmentResponse(appointmentId, dt, status, 0, patientFullName));
+                out.add(new DoctorAppointmentResponse(
+                        rs.getInt("aid"),
+                        rs.getTimestamp("appt_datetime").toLocalDateTime().toString(),
+                        rs.getString("status"),
+                        0,
+                        rs.getString("fullname")
+                ));
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        return out;
+    }
+
+    // 🔹 BUGÜN / GELECEK RANDEVULAR (GARANTİLİ ÇALIŞAN)
+    public List<DoctorAppointmentResponse> getUpcomingAppointments(long doctorId) {
+
+        String sql =
+            "SELECT a.aid, a.appt_datetime, a.status, p.fullname " +
+            "FROM APPOINTMENT a " +
+            "JOIN PATIENT p ON p.ssn = a.pssn " +
+            "WHERE a.did = ? AND a.appt_datetime >= NOW() " +
+            "ORDER BY a.appt_datetime ASC";
+
+        List<DoctorAppointmentResponse> out = new ArrayList<>();
+
+        try (Connection conn = DB.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setLong(1, doctorId);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                out.add(new DoctorAppointmentResponse(
+                        rs.getInt("aid"),
+                        rs.getTimestamp("appt_datetime").toLocalDateTime().toString(),
+                        rs.getString("status"),
+                        0,
+                        rs.getString("fullname")
+                ));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
         }
 
         return out;
