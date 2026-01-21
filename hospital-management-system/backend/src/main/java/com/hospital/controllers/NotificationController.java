@@ -10,10 +10,6 @@ import com.hospital.repositories.NotificationRepository;
 // Spring HTTP response yönetimi:
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-// Map, List, HashMap, ArrayList collections:
-import java.util.*;
-
-
 
 @RestController
 @RequestMapping("/api/notifications")
