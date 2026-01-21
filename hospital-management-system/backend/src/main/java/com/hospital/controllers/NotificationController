@@ -1,0 +1,53 @@
+package com.hospital.controllers;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+// Epidemic verisini DB'den çeken repository
+import com.hospital.repositories.NotificationRepository;
+// Spring HTTP response yönetimi:
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+// Map, List, HashMap, ArrayList collections:
+import java.util.*;
+
+
+
+@RestController
+@RequestMapping("/api/notifications")
+
+public class NotificationController {
+
+    @GetMapping("/epidemics")
+    public ResponseEntity<Map<String, Object>> getEpidemics(
+            @RequestParam(defaultValue = "10") int threshold
+    ) {
+        Map<String, Object> response = new HashMap<>();
+
+        try {
+            List<Map<String, Object>> epidemics = NotificationRepository.getEpidemicsLastMonth(threshold);
+            if (epidemics == null) {
+                epidemics = new ArrayList<>();
+            }
+
+            response.put("success", true);
+            response.put("data", epidemics);
+
+            // Ekstra: frontend uyarı metni için kolaylık
+            response.put("message", epidemics.isEmpty()
+                    ? "No epidemic signals in the last month."
+                    : "Common diseases detected in the last month!");
+
+            return ResponseEntity.ok(response);
+
+
+
+        } catch (Exception e) {
+            response.put("success", false);
+            response.put("error", e.getMessage());
+            return ResponseEntity.internalServerError().body(response);
+        }
+    }
+}
