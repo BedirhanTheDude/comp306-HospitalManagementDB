@@ -5,15 +5,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-// Epidemic verisini DB'den çeken repository
 import com.hospital.repositories.NotificationRepository;
-// Spring HTTP response yönetimi:
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-// Map, List, HashMap, ArrayList collections:
-import java.util.*;
-
-
 
 @RestController
 @RequestMapping("/api/notifications")
@@ -50,4 +44,20 @@ public class NotificationController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+
+    @GetMapping("/test")
+    public ResponseEntity<Map<String, Object>> getTestOverdue(
+        @RequestParam int patientssn){
+        Map<String, Object> response = new HashMap<>();
+        boolean isOverdue = NotificationRepository.getPatientIfBloodTestOverdue(patientssn);
+        if(isOverdue){
+            response.put("You have not had a blood test in the last 6 months.", true);
+        }
+        else{
+            response.put(null, false);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 }

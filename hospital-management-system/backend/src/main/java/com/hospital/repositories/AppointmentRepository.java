@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.security.SecureRandom;
@@ -239,6 +240,70 @@ public class AppointmentRepository {
             return result;
         } catch (SQLException e) {
             throw new RuntimeException("Error during appointment search.", e);
+        }
+    }
+
+    public static List<FindAvailableTimeSlotResponse> findAvailableTimeSlots(FindAvailableTimeSlotRequest request) {
+        List<FindAvailableTimeSlotResponse> result = new ArrayList<>();
+
+        List<LocalTime> slots = new ArrayList<>();
+        for (int hour = 8; hour < 17; hour++) {
+            LocalTime slot1 = LocalTime.of(hour, 0);
+            LocalTime slot2 = LocalTime.of(hour, 30);
+            slots.add(slot1);
+            slots.add(slot2);
+        }
+        slots.add(LocalTime.of(17, 0)); // Add the last slot at 17.00
+
+        List<LocalTime> occupiedSlots = new ArrayList<>();
+        List<LocalTime> freeSlots = new ArrayList<>();
+
+        String sql = """
+                SELECT appt_datetime AS date FROM APPOINTMENT
+                WHERE appt_datetime <= ? AND appt_datetime >= ? AND did = ?
+                """;
+
+        try (Connection conn = DB.getConnection()) {
+            PreparedStatement ps = conn.prepareStatement(sql);
+            LocalDateTime dayBeginning = LocalDateTime.of(
+                    request.getYear(), request.getMonth(), request.getDay(), 0, 0,0);
+            LocalDateTime dayEnd = LocalDateTime.of(
+                    request.getYear(), request.getMonth(), request.getDay(), 23, 59, 59);
+
+            ps.setObject(1, dayEnd);
+            ps.setObject(2, dayBeginning);
+            ps.setInt(3, request.getDoctorID());
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                LocalDateTime date = rs.getObject("date", LocalDateTime.class);
+                occupiedSlots.add(LocalTime.of(date.getHour(), date.getMinute()));
+            }
+
+            for (LocalTime slot : slots) {
+                boolean isOccupied = false;
+                for (LocalTime occupiedSlot : occupiedSlots) {
+                    if (slot.equals(occupiedSlot)) {
+                        isOccupied = true;
+                        break;
+                    }
+                }
+
+                if (!isOccupied)
+                    freeSlots.add(slot);
+            }
+
+            for (LocalTime freeSlot : freeSlots) {
+                FindAvailableTimeSlotResponse response =
+                        new FindAvailableTimeSlotResponse(freeSlot.getHour(), freeSlot.getMinute());
+
+                result.add(response);
+            }
+
+            return result;
+        } catch(SQLException e) {
+            e.printStackTrace();
+            return null;
         }
     }
 }
