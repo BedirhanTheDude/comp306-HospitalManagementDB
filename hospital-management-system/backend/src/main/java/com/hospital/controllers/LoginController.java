@@ -1,76 +1,95 @@
 package com.hospital.controllers;
 
+import com.hospital.dto.LoginRequest;
+import com.hospital.repositories.DoctorLookupRepository;
+import com.hospital.repositories.UserRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
 import java.util.HashMap;
 import java.util.Map;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.hospital.dto.LoginRequest;
-import com.hospital.repositories.UserRepository;
 
 @RestController
 @RequestMapping("/api")
 public class LoginController {
 
+    private final DoctorLookupRepository doctorLookupRepository;
+
+    public LoginController(DoctorLookupRepository doctorLookupRepository) {
+        this.doctorLookupRepository = doctorLookupRepository;
+    }
+
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest req) {
+
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            if(validateUser(loginRequest)){
-                boolean isAuthenticated = authenticateUser(loginRequest.getUsername(), loginRequest.getPassword());
-                if (isAuthenticated) {
-                    // Get patient details
-                    Map<String, Object> patientInfo = UserRepository.getPatientByUsername(loginRequest.getUsername());
+        // ---- 1. Basic validation ----
+        if (isBlank(req.getUsername()) ||
+                isBlank(req.getPassword()) ||
+                isBlank(req.getRole())) {
 
-                    response.put("success", true);
-                    response.put("message", "Login successful");
+            response.put("success", false);
+            response.put("error", "Invalid login data");
+            return ResponseEntity.badRequest().body(response);
+        }
 
-                    if (patientInfo != null) {
-                        response.put("fullName", patientInfo.get("fullName"));
-                        response.put("ssn", patientInfo.get("ssn"));
-                        response.put("gender", patientInfo.get("gender"));
-                    }
+        // ---- 2. Authentication ----
+        boolean authenticated =
+                UserRepository.authenticateUser(req.getUsername(), req.getPassword());
 
-                    return ResponseEntity.ok(response);
-                } else {
+        if (!authenticated) {
+            response.put("success", false);
+            response.put("error", "Invalid login credentials");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("success", true);
+        response.put("message", "Login successful");
+        response.put("role", req.getRole().toUpperCase());
+
+        // ---- 3. Role-specific payload ----
+        switch (req.getRole().toUpperCase()) {
+
+            case "PATIENT" -> {
+                Map<String, Object> patient =
+                        UserRepository.getPatientByUsername(req.getUsername());
+
+                if (patient == null) {
                     response.put("success", false);
-                    response.put("error", "Invalid login credentials");
+                    response.put("error", "Patient not found");
                     return ResponseEntity.badRequest().body(response);
                 }
+
+                response.put("ssn", patient.get("ssn"));
+                response.put("fullName", patient.get("fullName"));
+                response.put("gender", patient.get("gender"));
             }
-            else {
-                 response.put("success", false);
-                 response.put("error", "Invalid login data");
-                 return ResponseEntity.badRequest().body(response);
+
+            case "DOCTOR" -> {
+                Long doctorId =
+                        doctorLookupRepository.findDoctorIdByUsername(req.getUsername());
+
+                if (doctorId == null) {
+                    response.put("success", false);
+                    response.put("error", "Doctor not found");
+                    return ResponseEntity.badRequest().body(response);
+                }
+
+                response.put("doctorId", doctorId);
             }
 
-        } catch (Exception e) {
-            response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            default -> {
+                response.put("success", false);
+                response.put("error", "Unsupported role");
+                return ResponseEntity.badRequest().body(response);
+            }
         }
 
-        
-
-    }
-    private boolean validateUser(LoginRequest loginRequest) {
-        if (loginRequest.getUsername() == null || loginRequest.getUsername().isEmpty()) {
-            return false;
-        }
-        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) {
-            return false;
-        }
-        return true;
-    }
-    private boolean  authenticateUser(String username, String password) {
-        return UserRepository.authenticateUser(username, password);
+        return ResponseEntity.ok(response);
     }
 
-   
-    
+    private boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
+    }
 }
