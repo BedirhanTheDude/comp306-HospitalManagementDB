@@ -29,13 +29,17 @@ import {
   Typography,
   Paper,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 
 import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
-import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import { findAppointments, cancelAppointment } from "../services/appointmentService";
+import { listTestResults, deleteTestResult } from "../services/patientService";
 
 const drawerWidth = 240;
 
@@ -106,15 +110,76 @@ export default function PatientHome({ goToAppointment }) {
     { id: 1, text: "Your appointment is confirmed.", timeAgo: "Just now" },
   ];
 
-  // Reports (placeholder)
-  const reports = []; // [{ id, title, date }]
+  // -----------------------------
+  // ✅ TEST RESULTS (My Reports) FRONTEND INTEGRATION
+  // You will fill this from backend later
+  // Expected shape:
+  // {
+  //   testID, testName, value, minRef, maxRef, units, isBetweenRange,
+  //   year, month, day, hour, minute, second
+  // }
+  // -----------------------------
+  const [testResults, setTestResults] = React.useState([]); // <-- fill later from backend
+  const [openReportDialog, setOpenReportDialog] = React.useState(false);
+  const [selectedReport, setSelectedReport] = React.useState(null);
+
+  const toReportDate = (r) =>
+    new Date(
+      r?.year ?? 1970,
+      (r?.month ?? 1) - 1,
+      r?.day ?? 1,
+      r?.hour ?? 0,
+      r?.minute ?? 0,
+      r?.second ?? 0
+    );
+
+  const formatReportDate = (r) => {
+    const d = toReportDate(r);
+    if (Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+    }).format(d);
+  };
+
+  const formatReportDateTime = (r) => {
+    const d = toReportDate(r);
+    if (Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d);
+  };
+
+  const openReport = (r) => {
+    setSelectedReport(r);
+    setOpenReportDialog(true);
+  };
+
+  const closeReport = () => {
+    setOpenReportDialog(false);
+    setSelectedReport(null);
+  };
+
+  const handleDeleteTestResult = async (testID) => {
+    const response = await deleteTestResult(testID);
+    if (response.success) {
+      setTestResults((prev) => prev.filter((r) => r.testID !== testID));
+      closeReport();
+    } else {
+      console.error("Delete failed:", response.error);
+    }
+  };
 
   // Appointments from backend
   const [appointments, setAppointments] = React.useState([]);
 
   // helper: backend fields -> JS Date
   const toDate = (a) => {
-    // backend month is assumed 1-based, JS month is 0-based
     return new Date(
       a?.year ?? 1970,
       (a?.month ?? 1) - 1,
@@ -153,7 +218,23 @@ export default function PatientHome({ goToAppointment }) {
         setAppointments([]);
       }
     };
+    const loadTestResults = async () => {
+      if (!ssn) return;
+      try{
+        const response = await listTestResults(ssn);
+        if (response?.success && Array.isArray(response.data)) {
+          setTestResults(response.data);
+        } else {
+          setTestResults([]);
+        }
+      }
+      catch (error) {
+        console.error("Error fetching test results:", error);
+        setTestResults([]);
+      }
+    }
     loadAppointments();
+    loadTestResults();
   }, [ssn]);
 
   // Filter appointments into upcoming and previous
@@ -182,7 +263,6 @@ export default function PatientHome({ goToAppointment }) {
   const handleCancel = async (appointmentID) => {
     const response = await cancelAppointment(appointmentID);
     if (response.success) {
-      // Randevuyu listeden kaldır
       setAppointments((prev) => prev.filter((a) => a.appointmentID !== appointmentID));
     } else {
       console.error("Cancel failed:", response.error);
@@ -307,6 +387,7 @@ export default function PatientHome({ goToAppointment }) {
                 </Card>
               </Grid>
 
+              {/* ✅ MY REPORTS -> TEST RESULTS LIST */}
               <Grid item xs={12} lg={4} sx={{ display: "flex" }}>
                 <Card sx={{ ...cardSx, minHeight: topCardHeight, flex: 1 }}>
                   <CardContent
@@ -319,41 +400,61 @@ export default function PatientHome({ goToAppointment }) {
                   >
                     <SectionHeader
                       icon={<InsertDriveFileOutlinedIcon />}
-                      title="My Reports"
-                      right={<Chip size="small" label={`${reports.length}`} variant="outlined" />}
+                      title="My Test Results"
+                      right={
+                        <Chip size="small" label={`${testResults.length}`} variant="outlined" />
+                      }
                     />
 
-                    {reports.length === 0 ? (
+                    {testResults.length === 0 ? (
                       <EmptyState
                         icon={<InsertDriveFileOutlinedIcon />}
-                        title="No reports"
-                        subtitle="Your lab reports will appear here."
+                        title="No test results"
+                        subtitle="Your lab test results will appear here."
                       />
                     ) : (
-                      <List dense disablePadding sx={{ flexGrow: 1 }}>
-                        {reports.map((r) => (
-                          <ListItem
-                            key={r.id}
-                            disableGutters
-                            secondaryAction={
-                              <IconButton size="small" aria-label="download">
-                                <DownloadOutlinedIcon fontSize="small" />
-                              </IconButton>
-                            }
-                            sx={{ py: 1 }}
-                          >
-                            <ListItemAvatar>
-                              <Avatar sx={{ width: 32, height: 32 }}>
-                                <InsertDriveFileOutlinedIcon fontSize="small" />
-                              </Avatar>
-                            </ListItemAvatar>
-                            <ListItemText
-                              primary={r.title}
-                              secondary={r.date ? String(r.date) : ""}
-                            />
-                          </ListItem>
-                        ))}
-                      </List>
+                      <Box sx={{ flexGrow: 1, overflow: 'auto', maxHeight: 250 }}>
+                        <List dense disablePadding>
+                          {testResults.map((r) => (
+                            <ListItem
+                              key={r.testID}
+                              disableGutters
+                              button
+                              onClick={() => openReport(r)}
+                              sx={{
+                                py: 1,
+                                borderRadius: 2,
+                                px: 1,
+                                "&:hover": { bgcolor: "rgba(0,0,0,0.03)" },
+                              }}
+                              secondaryAction={
+                                <Typography variant="caption" color="text.secondary">
+                                  {formatReportDate(r)}
+                                </Typography>
+                              }
+                            >
+                              <ListItemAvatar>
+                                <Avatar sx={{ width: 32, height: 32 }}>
+                                  <InsertDriveFileOutlinedIcon fontSize="small" />
+                                </Avatar>
+                              </ListItemAvatar>
+
+                              <ListItemText
+                                primary={
+                                  <Typography fontWeight={800} noWrap>
+                                    {r.testName || "—"}
+                                  </Typography>
+                                }
+                                secondary={
+                                  <Typography variant="caption" color="text.secondary" noWrap>
+                                    Tap to view details
+                                  </Typography>
+                                }
+                              />
+                            </ListItem>
+                          ))}
+                        </List>
+                      </Box>
                     )}
                   </CardContent>
                 </Card>
@@ -369,7 +470,10 @@ export default function PatientHome({ goToAppointment }) {
                       p: 3,
                     }}
                   >
-                    <SectionHeader icon={<CalendarMonthOutlinedIcon />} title="Make an Appointment" />
+                    <SectionHeader
+                      icon={<CalendarMonthOutlinedIcon />}
+                      title="Make an Appointment"
+                    />
 
                     <Box
                       sx={{
@@ -496,7 +600,8 @@ export default function PatientHome({ goToAppointment }) {
                                       variant="outlined"
                                       color="error"
                                       sx={{ borderRadius: 2 }}
-                                      onClick={() => {handleCancel(a.appointmentID)
+                                      onClick={() => {
+                                        handleCancel(a.appointmentID);
                                       }}
                                     >
                                       Cancel
@@ -517,6 +622,82 @@ export default function PatientHome({ goToAppointment }) {
             </Grid>
           </Box>
         </Box>
+
+        {/*  REPORT DETAIL DIALOG */}
+        <Dialog open={openReportDialog} onClose={closeReport} fullWidth maxWidth="sm">
+          <DialogTitle sx={{ fontWeight: 900 }}>
+            {selectedReport?.testName || "Test Result"}
+          </DialogTitle>
+
+          <DialogContent dividers>
+            <Stack spacing={1.5}>
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Date
+                </Typography>
+                <Typography fontWeight={800}>
+                  {selectedReport ? formatReportDateTime(selectedReport) : "—"}
+                </Typography>
+              </Stack>
+
+              <Divider />
+
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Value
+                </Typography>
+                <Typography fontWeight={900}>
+                  {selectedReport?.value ?? "—"} {selectedReport?.units || ""}
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Reference Range
+                </Typography>
+                <Typography fontWeight={800}>
+                  {selectedReport?.minRef ?? "—"} - {selectedReport?.maxRef ?? "—"}{" "}
+                  {selectedReport?.units || ""}
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Status
+                </Typography>
+                <Chip
+                  size="small"
+                  label={selectedReport?.isBetweenRange ? "Within range" : "Out of range"}
+                  color={selectedReport?.isBetweenRange ? "success" : "error"}
+                  variant="outlined"
+                />
+              </Stack>
+
+              <Divider />
+
+              <Stack direction="row" justifyContent="space-between" spacing={2}>
+                <Typography variant="body2" color="text.secondary">
+                  Test ID
+                </Typography>
+                <Typography fontWeight={800}>{selectedReport?.testID ?? "—"}</Typography>
+              </Stack>
+            </Stack>
+          </DialogContent>
+
+          <DialogActions sx={{ justifyContent: 'space-between' }}>
+            <Button
+              variant="outlined"
+              color="error"
+              sx={{ borderRadius: 2 }}
+              onClick={() => handleDeleteTestResult(selectedReport?.testID)}
+            >
+              Delete
+            </Button>
+            <Button onClick={closeReport} sx={{ borderRadius: 2 }}>
+              Close
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Box>
     </Box>
   );

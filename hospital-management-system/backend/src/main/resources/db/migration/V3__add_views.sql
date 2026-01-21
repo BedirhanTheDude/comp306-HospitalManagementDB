@@ -1,2 +1,0 @@
--- V3: Add Views Migration
--- Database views for common queries
