@@ -35,12 +35,21 @@ import NotificationsNoneIcon from "@mui/icons-material/NotificationsNone";
 import InsertDriveFileOutlinedIcon from "@mui/icons-material/InsertDriveFileOutlined";
 import DownloadOutlinedIcon from "@mui/icons-material/DownloadOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import { findAppointments, cancelAppointment } from "../services/appointmentService";
 
 const drawerWidth = 240;
 
 function StatusChip({ status }) {
+  const normalized = (status || "").toLowerCase();
   const color =
-    status === "Confirmed" ? "success" : status === "Pending" ? "warning" : "default";
+    normalized === "confirmed"
+      ? "success"
+      : normalized === "pending"
+      ? "warning"
+      : normalized === "cancelled" || normalized === "canceled"
+      ? "error"
+      : "default";
+
   return <Chip size="small" label={status || "—"} color={color} variant="outlined" />;
 }
 
@@ -87,15 +96,75 @@ function EmptyState({ icon, title, subtitle }) {
 export default function PatientHome({ goToAppointment }) {
   // ---- Get user info from localStorage ----
   const fullName = localStorage.getItem("patientFullName") || "Guest";
-  const ssn = localStorage.getItem("patientSSN") || "";
+  const ssn = localStorage.getItem("patientSSN") || ""; // identityNumber / ssn
   const gender = localStorage.getItem("patientGender") || "";
 
   const genderDisplay = gender === "M" ? "Male" : gender === "F" ? "Female" : "";
 
-  const notifications = [{ text: "Your appointment is confirmed." }]; // [{ id, text, timeAgo }]
+  // Notifications (placeholder)
+  const notifications = [
+    { id: 1, text: "Your appointment is confirmed.", timeAgo: "Just now" },
+  ];
+
+  // Reports (placeholder)
   const reports = []; // [{ id, title, date }]
-  const upcomingAppointments = []; // [{ id, datetime, doctor, department, status }]
-  const previousAppointments = []; // same shape
+
+  // Appointments from backend
+  const [appointments, setAppointments] = React.useState([]);
+
+  // helper: backend fields -> JS Date
+  const toDate = (a) => {
+    // backend month is assumed 1-based, JS month is 0-based
+    return new Date(
+      a?.year ?? 1970,
+      (a?.month ?? 1) - 1,
+      a?.day ?? 1,
+      a?.hour ?? 0,
+      a?.minute ?? 0
+    );
+  };
+
+  const formatDateTime = (a) => {
+    const d = toDate(a);
+    if (Number.isNaN(d.getTime())) return "—";
+    return new Intl.DateTimeFormat(undefined, {
+      year: "numeric",
+      month: "short",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).format(d);
+  };
+
+  const genderLabel = (g) => (g === "M" ? "Male" : g === "F" ? "Female" : g || "—");
+
+  React.useEffect(() => {
+    const loadAppointments = async () => {
+      if (!ssn) return;
+      try {
+        const response = await findAppointments(ssn);
+        if (response?.success && Array.isArray(response.data)) {
+          setAppointments(response.data);
+        } else {
+          setAppointments([]);
+        }
+      } catch (error) {
+        console.error("Error fetching appointments:", error);
+        setAppointments([]);
+      }
+    };
+    loadAppointments();
+  }, [ssn]);
+
+  // Filter appointments into upcoming and previous
+  const now = new Date();
+  const upcomingAppointments = appointments
+    .filter((a) => toDate(a) >= now)
+    .sort((a, b) => toDate(a) - toDate(b));
+
+  const previousAppointments = appointments
+    .filter((a) => toDate(a) < now)
+    .sort((a, b) => toDate(b) - toDate(a));
 
   const [tab, setTab] = React.useState(0);
   const rowsToShow = tab === 0 ? upcomingAppointments : previousAppointments;
@@ -108,6 +177,16 @@ export default function PatientHome({ goToAppointment }) {
     height: "100%",
     border: "1px solid rgba(0,0,0,0.06)",
     boxShadow: "0 8px 24px rgba(15, 23, 42, 0.06)",
+  };
+
+  const handleCancel = async (appointmentID) => {
+    const response = await cancelAppointment(appointmentID);
+    if (response.success) {
+      // Randevuyu listeden kaldır
+      setAppointments((prev) => prev.filter((a) => a.appointmentID !== appointmentID));
+    } else {
+      console.error("Cancel failed:", response.error);
+    }
   };
 
   return (
@@ -130,7 +209,7 @@ export default function PatientHome({ goToAppointment }) {
       >
         <Toolbar sx={{ minHeight: 72 }}>
           <Stack direction="row" spacing={1.5} alignItems="center">
-            <Avatar>{fullName.charAt(0).toUpperCase()}</Avatar>
+            <Avatar>{(fullName || "G").charAt(0).toUpperCase()}</Avatar>
             <Box>
               <Typography variant="subtitle1" fontWeight={800}>
                 {fullName}
@@ -314,7 +393,12 @@ export default function PatientHome({ goToAppointment }) {
                         Book New Appointment
                       </Typography>
 
-                      <Typography variant="body2" color="text.secondary" align="center" sx={{ maxWidth: 260 }}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        align="center"
+                        sx={{ maxWidth: 260 }}
+                      >
                         Choose a department, doctor, and time slot.
                       </Typography>
 
@@ -357,8 +441,8 @@ export default function PatientHome({ goToAppointment }) {
                           "& .MuiTab-root": { minHeight: 36, fontWeight: 800 },
                         }}
                       >
-                        <Tab label="Upcoming" />
-                        <Tab label="Previous" />
+                        <Tab label={`Upcoming (${upcomingAppointments.length})`} />
+                        <Tab label={`Previous (${previousAppointments.length})`} />
                       </Tabs>
                     </Stack>
 
@@ -372,7 +456,8 @@ export default function PatientHome({ goToAppointment }) {
                           <TableRow sx={{ bgcolor: "rgba(0,0,0,0.02)" }}>
                             <TableCell sx={{ fontWeight: 900 }}>Date & Time</TableCell>
                             <TableCell sx={{ fontWeight: 900 }}>Doctor</TableCell>
-                            <TableCell sx={{ fontWeight: 900 }}>Department</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Gender</TableCell>
+                            <TableCell sx={{ fontWeight: 900 }}>Price</TableCell>
                             <TableCell sx={{ fontWeight: 900 }}>Status</TableCell>
                             <TableCell sx={{ fontWeight: 900 }}>Action</TableCell>
                           </TableRow>
@@ -381,7 +466,7 @@ export default function PatientHome({ goToAppointment }) {
                         <TableBody>
                           {rowsToShow.length === 0 ? (
                             <TableRow>
-                              <TableCell colSpan={5} sx={{ py: 4 }}>
+                              <TableCell colSpan={6} sx={{ py: 4 }}>
                                 <Stack alignItems="center" spacing={0.5}>
                                   <Typography fontWeight={900}>No appointments yet</Typography>
                                   <Typography variant="body2" color="text.secondary">
@@ -392,37 +477,33 @@ export default function PatientHome({ goToAppointment }) {
                             </TableRow>
                           ) : (
                             rowsToShow.map((a) => (
-                              <TableRow key={a.id} hover>
-                                <TableCell>{a.datetime || "—"}</TableCell>
-                                <TableCell>{a.doctor || "—"}</TableCell>
-                                <TableCell>{a.department || "—"}</TableCell>
+                              <TableRow key={a.appointmentID ?? a.id} hover>
+                                <TableCell>{formatDateTime(a)}</TableCell>
+                                <TableCell>{a.doctorFullName || "—"}</TableCell>
+                                <TableCell>{genderLabel(a.doctorGender)}</TableCell>
+                                <TableCell>
+                                  {typeof a.price === "number"
+                                    ? `${a.price.toFixed(2)} ₺`
+                                    : a.price ?? "—"}
+                                </TableCell>
                                 <TableCell>
                                   <StatusChip status={a.status} />
                                 </TableCell>
                                 <TableCell>
-                                  <Stack direction="row" spacing={1}>
-                                    <Button
-                                      size="small"
-                                      variant="outlined"
-                                      sx={{ borderRadius: 2 }}
-                                      onClick={() => {
-                                        // TODO: reschedule
-                                      }}
-                                    >
-                                      Reschedule
-                                    </Button>
+                                  {tab === 0 ? (
                                     <Button
                                       size="small"
                                       variant="outlined"
                                       color="error"
                                       sx={{ borderRadius: 2 }}
-                                      onClick={() => {
-                                        // TODO: cancel
+                                      onClick={() => {handleCancel(a.appointmentID)
                                       }}
                                     >
                                       Cancel
                                     </Button>
-                                  </Stack>
+                                  ) : (
+                                    "—"
+                                  )}
                                 </TableCell>
                               </TableRow>
                             ))

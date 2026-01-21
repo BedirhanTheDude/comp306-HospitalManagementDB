@@ -1,5 +1,5 @@
 import api from './api';
-import { createAppointmentRequest, createDoctorSearchRequest } from '../types/api';
+import { createAppointmentRequest, createDoctorSearchRequest, createFindAppointmentRequest } from '../types/api';
 
 //filter data
 
@@ -85,8 +85,51 @@ export const bookAppointment = async (params) =>
     };
   }};
 
-export const getAppointments = () => api.get('/appointments');
-export const getAppointmentById = (id) => api.get(`/appointments/${id}`);
-export const createAppointment = (data) => api.post('/appointments', data);
-export const updateAppointment = (id, data) => api.put(`/appointments/${id}`, data);
-export const deleteAppointment = (id) => api.delete(`/appointments/${id}`);
+
+
+// dashboard showing appointments
+/**
+ * Find appointments
+ * @param {Object} params
+ * @param {number} data.patientSSN - Patient's identity number
+ * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+ */
+export const findAppointments = async (patientSSN) =>
+{try {
+    const request = createFindAppointmentRequest({ patientSSN: Number(patientSSN) });
+    const response = await api.post('/appointments/calendar', request);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Could not find appointments. Please try again.',
+    };
+  }
+};
+
+/**
+ * Cancel appointments
+ * @param {Object} params
+ * @param {number} data.appointmentID - Patient's identity number
+ * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+ */
+export const cancelAppointment = async (appointmentID) =>
+{try {
+    const request = { appointmentID: Number(appointmentID) };
+    const response = await api.post('/appointments/cancel', request);
+    return {
+      success: true,
+      data: response.data,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Could not cancel appointment. Please try again.',
+    };
+  }
+};
+
+
