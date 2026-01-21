@@ -18,6 +18,7 @@
 export const createLoginRequest = (username, password) => ({
   username,
   password,
+  role
 });
 
 /**

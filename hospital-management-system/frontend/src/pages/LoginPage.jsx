@@ -18,9 +18,15 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
   const handleLogin = async () => {
     setError('');
 
-    const response = await loginUser(username, password);
+    const request = {
+      username,
+      password,
+      role
+    };
 
-    if (response && response.success) {
+    const response = await loginUser(request);
+
+    if (response?.success) {
       goToHome();
     } else {
       setError(response?.error || 'Login failed. Please try again.');
@@ -29,21 +35,8 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
   return (
     <Container maxWidth="sm">
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <Box
-          sx={{
-            width: '100%',
-            p: 4,
-            boxShadow: 3,
-            borderRadius: 2,
-          }}
-        >
+      <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center' }}>
+        <Box sx={{ width: '100%', p: 4, boxShadow: 3, borderRadius: 2 }}>
           <Typography variant="h4" align="center" gutterBottom>
             Login
           </Typography>
@@ -59,7 +52,7 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
           <Stack spacing={2} mt={3}>
             {error && <Alert severity="error">{error}</Alert>}
-            
+
             <TextField
               label="Username"
               fullWidth
@@ -75,31 +68,17 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
               onChange={(e) => setPassword(e.target.value)}
             />
 
-            <Button
-              variant="contained"
-              size="large"
-              fullWidth
-              onClick={handleLogin}
-            >
+            <Button variant="contained" size="large" fullWidth onClick={handleLogin}>
               Login
             </Button>
 
-            {/* Patient-only signup */}
             {role === 'PATIENT' && (
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={goToSignup}
-              >
+              <Button variant="outlined" fullWidth onClick={goToSignup}>
                 Sign Up
               </Button>
             )}
 
-            <Button
-              variant="text"
-              fullWidth
-              onClick={goToWelcome}
-            >
+            <Button variant="text" fullWidth onClick={goToWelcome}>
               Back to Welcome
             </Button>
           </Stack>

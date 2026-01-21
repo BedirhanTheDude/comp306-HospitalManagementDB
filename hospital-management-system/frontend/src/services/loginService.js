@@ -1,25 +1,34 @@
 import api from './api';
-import { createLoginRequest } from '../types/api';
 
 /**
- * Login user with username and password
- * @param {string} username
- * @param {string} password
- * @returns {Promise<{success: boolean, message?: string, error?: string}>}
+ * Login user
+ * @param {{ username: string, password: string, role?: string }} loginRequest
  */
-export const loginUser = async (username, password) => {
+export const loginUser = async (loginRequest) => {
   try {
-    const request = createLoginRequest(username, password);
-    const response = await api.post('/login', request);
+    const response = await api.post('/login', loginRequest);
+    const data = response.data;
 
-    // Save user info to localStorage on successful login
-    if (response.data.success) {
-      localStorage.setItem('patientSSN', response.data.ssn || '');
-      localStorage.setItem('patientFullName', response.data.fullName || '');
-      localStorage.setItem('patientGender', response.data.gender || '');
+    if (data.success) {
+      // Persist role
+      if (data.role) {
+        localStorage.setItem('role', data.role);
+      }
+
+      // Doctor login
+      if (data.doctorId) {
+        localStorage.setItem('doctor_id', data.doctorId);
+      }
+
+      // Patient login
+      if (data.ssn) {
+        localStorage.setItem('patientSSN', data.ssn);
+        localStorage.setItem('patientFullName', data.fullName || '');
+        localStorage.setItem('patientGender', data.gender || '');
+      }
     }
 
-    return response.data;
+    return data;
   } catch (error) {
     return {
       success: false,
