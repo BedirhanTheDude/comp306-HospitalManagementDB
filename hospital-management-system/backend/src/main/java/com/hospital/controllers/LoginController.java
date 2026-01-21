@@ -6,7 +6,6 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import com.hospital.dto.LoginRequest;
 import com.hospital.repositories.DoctorLookupRepository;
 import com.hospital.repositories.UserRepository;
 
@@ -21,96 +20,79 @@ public class LoginController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> body) {
+        System.out.println("### LOGIN HIT body=" + body);
+
         Map<String, Object> response = new HashMap<>();
 
-        try {
-            if (!validateUser(loginRequest)) {
-                response.put("success", false);
-                response.put("error", "Invalid login data");
-                return ResponseEntity.badRequest().body(response);
-            }
+        // 1) username/fullName fallback
+        String username = firstNonBlank(
+                get(body, "username"),
+                get(body, "userName"),
+                get(body, "fullName"),
+                get(body, "fullname"),
+                get(body, "name")
+        );
 
-            // Dev uyumu: username varsa onu kullan, yoksa fullName fallback
-            String username = getUsername(loginRequest);
+        // 2) password fallback
+        String password = firstNonBlank(get(body, "password"), get(body, "pass"));
 
-            boolean isAuthenticated = authenticateUser(username, loginRequest.getPassword());
+        // 3) role opsiyonel
+        String role = get(body, "role");
 
-            if (!isAuthenticated) {
-                response.put("success", false);
-                response.put("error", "Invalid login credentials");
-                return ResponseEntity.badRequest().body(response);
-            }
+        System.out.println("### PARSED username=" + username + " password=" + (password == null ? null : "***") + " role=" + role);
 
-            // Login başarılı
-            response.put("success", true);
-            response.put("message", "Login successful");
-
-            // role dev'de kaldırılmış olabilir -> null olabilir, yine de response'a koyuyoruz
-            String role = safeTrim(loginRequest.getRole());
-            if (role != null) {
-                response.put("role", role);
-            }
-
-            // DoctorId mantığı:
-            // 1) role DOCTOR ise doctorId dön
-            // 2) role yoksa / farklıysa bile, username doctor ise doctorId dön (safe & merge-friendly)
-            Long doctorId = doctorLookupRepository.findDoctorIdByUsername(username);
-
-            boolean roleSaysDoctor = (role != null && "DOCTOR".equalsIgnoreCase(role));
-            boolean userIsDoctor = (doctorId != null);
-
-            if (roleSaysDoctor || userIsDoctor) {
-                if (doctorId == null) {
-                    response.put("success", false);
-                    response.put("error", "Doctor not found for given username");
-                    return ResponseEntity.badRequest().body(response);
-                }
-                response.put("doctorId", doctorId);
-
-                // role hiç gelmediyse ama doctor bulunduysa role'u DOCTOR olarak setleyebiliriz (opsiyonel)
-                if (role == null) {
-                    response.put("role", "DOCTOR");
-                }
-            }
-
-            return ResponseEntity.ok(response);
-
-        } catch (Exception e) {
+        // sadece gerçekten boşsa invalid data
+        if (isBlank(username) || isBlank(password)) {
             response.put("success", false);
-            response.put("error", e.getMessage());
-            return ResponseEntity.internalServerError().body(response);
+            response.put("error", "Invalid login data");
+            return ResponseEntity.badRequest().body(response);
         }
+
+        // auth
+        boolean ok = UserRepository.authenticateUser(username, password);
+        if (!ok) {
+            response.put("success", false);
+            response.put("error", "Invalid login credentials");
+            return ResponseEntity.badRequest().body(response);
+        }
+
+        response.put("success", true);
+        response.put("message", "Login successful");
+
+        // role gönderildiyse ekle
+        if (!isBlank(role)) response.put("role", role);
+
+        // doctorId: role DOCTOR ise ya da username doctor'a bağlıysa döndür
+        Long doctorId = doctorLookupRepository.findDoctorIdByUsername(username);
+        boolean roleSaysDoctor = "DOCTOR".equalsIgnoreCase(role);
+
+        if (roleSaysDoctor || doctorId != null) {
+            if (doctorId == null) {
+                response.put("success", false);
+                response.put("error", "Doctor not found for given username");
+                return ResponseEntity.badRequest().body(response);
+            }
+            response.put("doctorId", doctorId);
+            if (isBlank(role)) response.put("role", "DOCTOR");
+        }
+
+        return ResponseEntity.ok(response);
     }
 
-    private boolean validateUser(LoginRequest loginRequest) {
-        String username = getUsername(loginRequest);
-        if (username == null || username.isEmpty()) return false;
-
-        if (loginRequest.getPassword() == null || loginRequest.getPassword().isEmpty()) return false;
-
-        //  role artık zorunlu değil (dev ile uyum için)
-        return true;
+    private static String get(Map<String, Object> body, String key) {
+        Object v = body.get(key);
+        return v == null ? null : String.valueOf(v);
     }
 
-    private String getUsername(LoginRequest loginRequest) {
-        // LoginRequest'e getUsername() eklediysen onu kullan:
-        try {
-            String u = safeTrim(loginRequest.getUsername()); // fallback'li method ise süper
-            if (u != null) return u;
-        } catch (Exception ignored) {}
-
-        // Eski yapı: fullName alanına username yazılıyor olabilir
-        return safeTrim(loginRequest.getFullName());
+    private static boolean isBlank(String s) {
+        return s == null || s.trim().isEmpty();
     }
 
-    private String safeTrim(String s) {
-        if (s == null) return null;
-        String t = s.trim();
-        return t.isEmpty() ? null : t;
-    }
-
-    private boolean authenticateUser(String username, String password) {
-        return UserRepository.authenticateUser(username, password);
+    private static String firstNonBlank(String... vals) {
+        for (String v : vals) {
+            if (!isBlank(v)) return v;
+        }
+        return null;
     }
 }
