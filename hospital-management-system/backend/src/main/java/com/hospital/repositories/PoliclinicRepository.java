@@ -14,7 +14,7 @@ public class PoliclinicRepository {
 
     public static List<String> getAllPoliclinics() {
         // Implementation to fetch all policlinics from the database
-        String sql = "SELECT name FROM POLICLINIC";
+        String sql = "SELECT DISTINCT name FROM POLICLINIC";
         // Execute the query and build the list
         
 

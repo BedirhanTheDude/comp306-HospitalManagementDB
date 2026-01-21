@@ -18,7 +18,7 @@ public class AppointmentRepository {
         List<DoctorSearchResponse> results = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder("""
-            SELECT E.fullname AS fullname, E.gender AS gender, ROUND(AVG(R.rating), 2) AS doctorRating
+            SELECT E.fullname AS fullname, E.gender AS gender, ROUND(AVG(R.rating), 2) AS doctorRating, D.did
             FROM DOCTOR D
             JOIN EMPLOYEE E ON D.ssn = E.ssn
             JOIN POLICLINIC P ON D.poid = P.poid
@@ -71,7 +71,8 @@ public class AppointmentRepository {
                 DoctorSearchResponse dto = new DoctorSearchResponse(
                         rs.getString("fullname"),
                         rs.getString("gender"),
-                        rs.getDouble("doctorRating")
+                        rs.getDouble("doctorRating"),
+                        rs.getInt("did")
                 );
 
                 results.add(dto);
