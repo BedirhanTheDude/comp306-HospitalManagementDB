@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public class UserRepository {
     
     public static boolean insertUser(String username, String password, String userType) {
-        String sql = "INSERT INTO USER(username, password, user_type) VALUES (?, ?, ?)";
+        String sql = "INSERT INTO USER(username, password_hash, user_type) VALUES (?, ?, ?)";
 
         try (Connection conn = DB.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -48,7 +48,7 @@ public class UserRepository {
             var rs = ps.executeQuery();
 
             if (rs.next()) {
-                String storedPassword = rs.getString("password");
+                String storedPassword = rs.getString("password_hash");
                 return storedPassword.equals(password);
             }
             return false;

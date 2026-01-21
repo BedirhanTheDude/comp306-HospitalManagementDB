@@ -18,6 +18,15 @@ import com.hospital.dto.FindAppointmentRequest;
 import com.hospital.dto.FindAppointmentResponse;
 import com.hospital.repositories.AppointmentRepository;
 
+import com.hospital.dto.CancelAppointmentRequest;
+import com.hospital.dto.CancelAppointmentResponse;
+import com.hospital.dto.CreateAppointmentRequest;
+import com.hospital.dto.CreateAppointmentResponse;
+import com.hospital.dto.DoctorSearchRequest;
+import com.hospital.dto.DoctorSearchResponse;
+import com.hospital.dto.FindAppointmentRequest;
+import com.hospital.dto.FindAppointmentResponse;
+
 @RestController
 @RequestMapping("/api/appointments")
 public class AppointmentController {
@@ -40,5 +49,10 @@ public class AppointmentController {
     @PostMapping("/calendar")
     public ResponseEntity<List<FindAppointmentResponse>> findAppointments(@RequestBody FindAppointmentRequest request) {
         return ResponseEntity.ok(AppointmentRepository.findAppointments(request));
+    }
+
+    @PostMapping("/slots")
+    public ResponseEntity<List<FindAvailableTimeSlotResponse>> findAvailableSlots(@RequestBody FindAvailableTimeSlotRequest request) {
+        return ResponseEntity.ok(AppointmentRepository.findAvailableTimeSlots(request));
     }
 }

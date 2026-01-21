@@ -6,7 +6,7 @@ public class DoctorSearchResponse {
     private Double doctorRating;
     private int doctorId;
 
-    public DoctorSearchResponse(String doctorFullName, String doctorGender, Double doctorRating) {
+    public DoctorSearchResponse(String doctorFullName, String doctorGender, Double doctorRating, int doctorId) {
         this.doctorFullName = doctorFullName;
         this.doctorGender = doctorGender;
         this.doctorRating = doctorRating;
