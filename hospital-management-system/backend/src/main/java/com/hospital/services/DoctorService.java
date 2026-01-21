@@ -4,9 +4,12 @@ import com.hospital.exceptions.ResourceNotFoundException;
 import com.hospital.models.Doctor;
 import com.hospital.repositories.DoctorRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.context.annotation.Profile;
+
 
 import java.util.List;
 
+@Profile("jpa")
 @Service
 public class DoctorService {
 

@@ -17,20 +17,30 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
   const handleLogin = async () => {
     setError('');
-    
+
     const request = {
       fullName,
-      password
+      password,
+      role
     };
 
     const response = await loginUser(request);
 
     if (response && response.success) {
+      localStorage.setItem('auth_role', role);
+      if (response.doctorId) {
+        localStorage.setItem('doctor_id', String(response.doctorId));
+      }
       goToHome();
     } else {
       setError(response?.error || 'Login failed. Please try again.');
     }
   };
+
+  // Role'a göre label ve placeholder
+  const usernameLabel = role === 'DOCTOR' ? 'Email/Username' : 'Full Name';
+  const usernamePlaceholder =
+    role === 'DOCTOR' ? 'Enter your email or username' : 'Enter your full name';
 
   return (
     <Container maxWidth="sm">
@@ -64,9 +74,10 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
           <Stack spacing={2} mt={3}>
             {error && <Alert severity="error">{error}</Alert>}
-            
+
             <TextField
-              label="Username"
+              label={usernameLabel}
+              placeholder={usernamePlaceholder}
               fullWidth
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
@@ -91,20 +102,12 @@ const LoginPage = ({ role, goToSignup, goToWelcome, goToHome }) => {
 
             {/* Patient-only signup */}
             {role === 'PATIENT' && (
-              <Button
-                variant="outlined"
-                fullWidth
-                onClick={goToSignup}
-              >
+              <Button variant="outlined" fullWidth onClick={goToSignup}>
                 Sign Up
               </Button>
             )}
 
-            <Button
-              variant="text"
-              fullWidth
-              onClick={goToWelcome}
-            >
+            <Button variant="text" fullWidth onClick={goToWelcome}>
               Back to Welcome
             </Button>
           </Stack>

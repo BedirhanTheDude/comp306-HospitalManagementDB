@@ -5,6 +5,11 @@ public class LoginRequest {
     private String fullName;
     private String password;
 
+    private String role; // "DOCTOR" | "PATIENT" | "ADMIN"
+    public String getRole() { return role; }
+    public void setRole(String role) { this.role = role; }
+
+
     public String getFullName() {
         return fullName;
     }

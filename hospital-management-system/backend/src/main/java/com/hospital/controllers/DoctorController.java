@@ -3,9 +3,12 @@ package com.hospital.controllers;
 import com.hospital.models.Doctor;
 import com.hospital.services.DoctorService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.context.annotation.Profile;
+
 
 import java.util.List;
 
+@Profile("jpa")
 @RestController
 @RequestMapping("/api/doctors")
 public class DoctorController {
