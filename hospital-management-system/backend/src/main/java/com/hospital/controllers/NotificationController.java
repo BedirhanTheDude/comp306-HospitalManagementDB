@@ -115,5 +115,23 @@ public class NotificationController {
             return ResponseEntity.internalServerError().body(response);
         }
     }
+    @GetMapping("/abnormal-tests")
+    public ResponseEntity<Map<String, Object>> getAbnormalTests(
+            @RequestParam int patientssn) {
+
+        Map<String, Object> response = new HashMap<>();
+
+        boolean abnormal = NotificationRepository.hasAbnormalTests(patientssn);
+
+        if (abnormal) {
+            response.put("message", "You have abnormal test results.");
+            response.put("abnormal", true);
+        } else {
+            response.put("abnormal", false);
+        }
+
+        return ResponseEntity.ok(response);
+    }
+
 
 }
