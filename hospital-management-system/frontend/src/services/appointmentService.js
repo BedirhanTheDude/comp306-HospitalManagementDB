@@ -1,5 +1,5 @@
 import api from './api';
-import { createAppointmentRequest, createDoctorSearchRequest, createFindAppointmentRequest } from '../types/api';
+import { createAppointmentRequest, createDoctorSearchRequest, createFindRequest } from '../types/api';
 
 //filter data
 
@@ -96,7 +96,7 @@ export const bookAppointment = async (params) =>
  */
 export const findAppointments = async (patientSSN) =>
 {try {
-    const request = createFindAppointmentRequest({ patientSSN: Number(patientSSN) });
+    const request = createFindRequest({ patientSSN: Number(patientSSN) });
     const response = await api.post('/appointments/calendar', request);
     return {
       success: true,

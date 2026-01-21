@@ -99,15 +99,14 @@ export const createAppointmentRequest = ({
   doctorID,
 });
 
-//Creates a find appointments request object
+//Creates a find appointments and test results request object
 /**
  * Creates a find appointments request object
- * Backend DTO: backend/src/main/java/com/hospital/dto/FindAppointmentRequest.java
  * @param {Object} params
  * @param {number} params.patientSSN - Patient's identity number
  * @returns {Object} FindAppointmentRequest compatible with backend
  */
-export const createFindAppointmentRequest = ({ patientSSN }) => ({
+export const createFindRequest = ({ patientSSN }) => ({
   patientSSN,
 });
 
@@ -120,6 +119,9 @@ export const createFindAppointmentRequest = ({ patientSSN }) => ({
 export const CancelAppointmentRequest = ({}) => ({
   appointmentID,
 });
+
+
+
 
 /**
  * API Response structure

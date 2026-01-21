@@ -1,14 +1,20 @@
 package com.hospital.controllers;
 
-import com.hospital.dto.*;
-import com.hospital.repositories.TestResultRepository;
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.hospital.dto.DeleteTestResultRequest;
+import com.hospital.dto.DeleteTestResultResponse;
+import com.hospital.dto.FindTestResultRequest;
+import com.hospital.dto.FindTestResultResponse;
+import com.hospital.dto.RecordNewTestResultRequest;
+import com.hospital.dto.RecordNewTestResultResponse;
+import com.hospital.repositories.TestResultRepository;
 
 @RestController
 @RequestMapping("/api/tests")
